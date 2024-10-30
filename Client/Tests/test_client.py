@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import unittest
 from json_converter import convert_to_json
 
@@ -16,4 +20,4 @@ class TestClient(unittest.TestCase):
         self.assertEqual(result, expected_result)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
