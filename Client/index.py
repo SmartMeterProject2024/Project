@@ -1,21 +1,8 @@
 import socketio
-import json
+import json_converter as json
 from datetime import datetime
 
 socket = socketio.Client()
-
-def convert_to_json(id, time, usage):
-    # Create a dictionary
-    data = {
-        "id": id,
-        "time": time,
-        "usage": usage
-    }
-    # Convert the dictionary to a JSON string
-    json_object = json.dumps(data, indent=4)
-    # Convert the json string to JSON object
-    json_object = json.loads(json_object)
-    return json_object
 
 @socket.event
 def connect():
@@ -36,9 +23,13 @@ def Hello(data):
     id = 123
     time = datetime.now().isoformat()
     usage = 45.67
-    json_result = convert_to_json(id, time, usage)
+    json_result = json.convert_to_json(id, time, usage)
     print(json_result)
     socket.emit('Hello World!', json_result)
 
-socket.connect("http://localhost:3000")
-socket.wait()
+def main():
+    socket.connect("http://localhost:3000")
+    socket.wait()
+
+if __name__ == '__main__':
+    main()
