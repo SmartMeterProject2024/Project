@@ -1,1 +1,3 @@
 /Server/node_modules
+Client/__pycache__/*
+Client/Tests/__pycache__/*
