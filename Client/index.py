@@ -1,3 +1,4 @@
+import time
 import socketio
 import json_converter as json
 from datetime import datetime
@@ -27,8 +28,19 @@ def Hello(data):
     print(json_result)
     socket.emit('Hello World!', json_result)
 
+def connect_to_server():
+    connected = False
+    while not connected:
+        try:
+            socket.connect("http://localhost:3000")
+            print("Connected")
+            connected = True
+        except socketio.exceptions.ConnectionError:
+            print("Couldn't connect to Server. Retrying in 5 seconds...")
+            time.sleep(5)
+
 def main():
-    socket.connect("http://localhost:3000")
+    connect_to_server()
     socket.wait()
 
 if __name__ == '__main__':
