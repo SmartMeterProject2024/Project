@@ -1,15 +1,20 @@
 import random
 import time
 
-def start_generating_readings():
-  while True:
-    wait_for_next_interval()
-    num = generate_reading()
-    print(num)
+def handle_print_interval(interval): # Won't be triggered during tests
+   print(f"(Next reading in {interval} seconds)")
 
-def wait_for_next_interval():
+def start_generating_readings(callback):
+  while True:
+    wait_for_next_interval(handle_print_interval)
+    num = generate_reading()
+    callback(num)
+
+def wait_for_next_interval(callback=None): # Implementation - callback | Test - none
    # start timer for next generated reading
     interval = random.randint(15, 60)
+    if callback is not None:
+        callback(interval)
     time.sleep(interval)
 
 def generate_reading():

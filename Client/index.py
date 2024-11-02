@@ -1,4 +1,5 @@
 import socketio
+import reading_generator
 import json_converter as json
 from datetime import datetime
 
@@ -20,12 +21,15 @@ def disconnect():
 @socket.event
 def Hello(data):
     print("Hello message received: " + data)
+    # triggers 'handle_generated_reading' every interval in 'start_generating_readings()'
+    reading_generator.start_generating_readings(handle_generated_reading)
+
+def handle_generated_reading(usage):
     id = 123
     time = datetime.now().isoformat()
-    usage = 45.67
     json_result = json.convert_to_json(id, time, usage)
-    print(json_result)
-    socket.emit('Hello World!', json_result)
+    print(f"Sending Reading: {usage} kWh")
+    socket.emit('Send_Reading', json_result)
 
 def main():
     socket.connect("http://localhost:3000")
