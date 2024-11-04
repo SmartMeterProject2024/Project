@@ -1,4 +1,5 @@
 const { Server } = require("socket.io");
+const JsonToVariables = require("./proxy")
 
 const io = new Server({ /* options */ });
 
@@ -17,8 +18,3 @@ io.on("connection", (socket) => {
 
 io.listen(3000);
 
-// Function to convert JSON object into variables
-function JsonToVariables(jsonObject) {
-    const { id, time, usage } = jsonObject;
-    return { id, time, usage };
-}
