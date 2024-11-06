@@ -2,6 +2,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 from ttkbootstrap.widgets import Meter
 from random import randint
+from datetime import datetime
 
 # Fonts
 font_reg = ("Verdana", 14, "normal")
@@ -16,25 +17,23 @@ root.geometry("400x300")
 root.minsize(400, 300)
 
 # Variables to store the target usage level and step size
-target_usage = 50
+target_usage = 100
 current_usage = 50
 
 # Function to smoothly update the gauge towards the target usage level
 def smooth_update():
     global current_usage
-    # If the current usage is not equal to the target, move towards it
+    # Smoothly approach the target usage
     if current_usage < target_usage:
-        current_usage += 1  # Increment for increase
+        current_usage += 1  # Increment to increase
     elif current_usage > target_usage:
-        current_usage -= 1  # Decrement for decrease
-    else:
-        return  # Exit if target is reached
+        current_usage -= 1  # Decrement to decrease
 
-    # Update the meter display
-    meter.amountused = current_usage
+    # Update the meter display and subtext
+    meter.configure(amountused=current_usage, subtext=f"{current_usage} kWh")
     lblUsageVal.config(text=f"{current_usage} kWh")
 
-    # Adjust color based on usage level
+    # Change color based on usage level
     if current_usage < 33:
         meter.configure(bootstyle="success")
     elif current_usage < 66:
@@ -42,14 +41,19 @@ def smooth_update():
     else:
         meter.configure(bootstyle="danger")
 
-    # Continue updating every 50 milliseconds
-    root.after(50, smooth_update)
+    # Continue updating until reaching the target
+    if current_usage != target_usage:
+        root.after(20, smooth_update)  # Recursive call
 
 # Function to set a new random target usage level
 def update_gauge():
     global target_usage
     target_usage = randint(0, 100)  # Set a new random target
-    smooth_update()  # Begin the smooth transition
+    smooth_update()  # Begin smooth transition
+
+def update_time():
+    lblTime.config(text=datetime.now().strftime("%H:%M"))
+    lblTime.after(5000, update_time)
 
 # Heading label
 lblHeading = ttk.Label(root, text="Smart Meter", font=font_heading, anchor='center')
@@ -59,7 +63,7 @@ lblHeading.grid(row=0, column=0, columnspan=3, pady=(10, 0))
 meter = Meter(
     root,
     metersize=180,
-    amountused=current_usage,  # Start at initial usage level
+    amountused=current_usage,
     metertype='semi',
     subtext="Energy Usage",
     interactive=False,
@@ -71,7 +75,7 @@ meter.grid(row=1, column=0, columnspan=3, pady=(10, 0))
 lblBudget = ttk.Label(root, text="Budget", font=font_small)
 lblBudget.grid(row=2, column=0, columnspan=3)
 
-lblTime = ttk.Label(root, text="14:38", font=font_bold)
+lblTime = ttk.Label(root, text=datetime.now().strftime("%H:%M"), font=font_bold)
 lblTime.grid(row=1, column=2, sticky='e')
 
 # Energy usage and bill labels
@@ -94,5 +98,6 @@ root.grid_columnconfigure(0, weight=1)
 root.grid_columnconfigure(1, weight=1)
 root.grid_columnconfigure(2, weight=1)
 
+update_time()
 # Run the application
 root.mainloop()
