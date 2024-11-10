@@ -1,8 +1,9 @@
-import time
+import threading
 import socketio
 import reading_generator
 import json_converter as json
 from datetime import datetime
+import ui as client_ui
 
 socket = socketio.Client()
 
@@ -33,19 +34,25 @@ def handle_generated_reading(usage):
     socket.emit('Send_Reading', json_result)
 
 def connect_to_server():
-    connected = False
-    while not connected:
-        try:
-            socket.connect("http://localhost:3000")
-            print("Connected")
-            connected = True
-        except socketio.exceptions.ConnectionError:
-            print("Couldn't connect to Server. Retrying in 5 seconds...")
-            time.sleep(5)
+    print("Attempting to connect...")
+    try:
+        socket.connect("http://localhost:3000")
+        print("Connected")
+    except socketio.exceptions.ConnectionError:
+        print("Couldn't connect to Server. Retrying in 5 seconds...")
+        view.after(5000, connect_to_server)
+
+def start_connection_thread():
+    connection_thread = threading.Thread(target=connect_to_server)
+    connection_thread.start()
 
 def main():
-    connect_to_server()
-    socket.wait()
+    global view
+    # Start the UI
+    view = client_ui.launch_ui()
+    view.after(1500, start_connection_thread)  # Start connection attempt shortly after UI launch
+    view.mainloop()
+    
 
 if __name__ == '__main__':
     main()

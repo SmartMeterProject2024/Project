@@ -21,7 +21,3 @@ To run client:
 ```py index.py```
 
 ---
-
-*temporary run UI*
-
-run file **ui.py**
