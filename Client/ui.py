@@ -75,10 +75,7 @@ def launch_ui():
     root.grid_columnconfigure(2, weight=1)
 
     update_time()
-    return root
-
-def update_ui():
-    root.after(5000, update_ui)
+    return root, update_gauge
 
 
 # Function to smoothly update the gauge towards the target usage level
@@ -86,9 +83,9 @@ def smooth_update():
     global current_usage
     # Smoothly approach the target usage
     if current_usage < target_usage:
-        current_usage += 3 if (target_usage - current_usage > 10) else 1  # Increment to increase
+        current_usage += 3 if (target_usage - current_usage > 10) else 1 if (target_usage - current_usage > 1) else (target_usage - current_usage)  # Increment to increase
     elif current_usage > target_usage:
-        current_usage -= 3 if (current_usage - target_usage > 10) else 1  # Decrement to decrease
+        current_usage -= 3 if (current_usage - target_usage > 10) else 1 if (current_usage - target_usage > 1) else (current_usage - target_usage)  # Decrement to decrease
 
     # Update the meter display and subtext
     meter.configure(amountused=current_usage, subtext=f"{current_usage} kWh")
@@ -107,9 +104,9 @@ def smooth_update():
         root.after(20, smooth_update)  # Recursive call
 
 # Function to set a new random target usage level
-def update_gauge():
+def update_gauge(new_usage):
     global target_usage
-    target_usage = randint(0, 100)  # Set a new random target
+    target_usage = new_usage  # Set target
     smooth_update()  # Begin smooth transition
 
 def update_time():
@@ -118,4 +115,4 @@ def update_time():
 
 def on_closing():
     print("Shutdown")
-    sys.exit()
+    sys.exit() # closes index.py as well

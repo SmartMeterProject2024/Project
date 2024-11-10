@@ -32,6 +32,7 @@ def handle_generated_reading(usage):
     json_result = json.convert_to_json(id, time, usage)
     print(f"Sending Reading: {usage} kWh")
     socket.emit('Send_Reading', json_result)
+    update_view(usage)
 
 def connect_to_server():
     print("Attempting to connect...")
@@ -47,9 +48,9 @@ def start_connection_thread():
     connection_thread.start()
 
 def main():
-    global view
+    global view, update_view
     # Start the UI
-    view = client_ui.launch_ui()
+    view, update_view = client_ui.launch_ui()
     view.after(1500, start_connection_thread)  # Start connection attempt shortly after UI launch
     view.mainloop()
     
