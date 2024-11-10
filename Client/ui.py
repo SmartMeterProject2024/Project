@@ -13,11 +13,11 @@ font_heading = ("Verdana", 20, "bold")
 # Create the main window with ttkbootstrap
 root = ttk.Window(themename="darkly")
 root.title("Smart Meter UI")
-root.geometry("400x300")
-root.minsize(400, 300)
+root.geometry("800x600")
+root.minsize(800, 600)
 
 # Variables to store the target usage level and step size
-target_usage = 100
+target_usage = 50
 current_usage = 50
 
 # Function to smoothly update the gauge towards the target usage level
