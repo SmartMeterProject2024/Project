@@ -18,7 +18,7 @@ def wait_for_next_interval(callback=None): # Implementation - callback | Test - 
     time.sleep(interval)
 
 def generate_reading():
-  num = random.randint(0, 1000) # inclusive
+  num = random.randint(0, 250) # inclusive
   # 1 decimal place
   usage = (num if num == 0 else num / 10)
   return usage

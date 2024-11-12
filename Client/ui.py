@@ -2,7 +2,7 @@ import sys
 import tkinter as tk
 import ttkbootstrap as ttk
 from ttkbootstrap.widgets import Meter
-from random import randint, choice
+from random import choice
 from datetime import datetime
 from tkinter import messagebox
 import logging
@@ -17,25 +17,17 @@ font_small = ("Verdana", 10, "normal")
 font_bold = ("Verdana", 16, "bold")
 font_heading = ("Verdana", 20, "bold")
 
-# Variables to store usage, target usage, and bill
-target_usage = 100
-current_usage = 50
-bill = 6.84  # Initial bill amount
-cost_per_kwh = 0.14  # Cost per kWh
-
-# recurring ui components
-root = None
-meter = None
-lblUsageVal = None
-lblTime = None
+# Variables to store usage, target usage
+target_usage = 0
+current_usage = 0
 
 def launch_ui():
     global root, meter, current_usage, target_usage, lblUsageVal, lblTime, lblDate, lblBillVal, signal_status, alert_status, lblGridError, lblConnectionError
     # Create the main window with ttkbootstrap
     root = ttk.Window(themename="darkly")
     root.title("Smart Meter UI")
-    root.geometry("800x600")
-    root.minsize(800, 600)
+    root.geometry("900x700")
+    root.minsize(900, 700)
 
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
@@ -51,7 +43,8 @@ def launch_ui():
         metertype='semi',
         subtext="Energy Usage",
         interactive=False,
-        bootstyle="success"
+        bootstyle="success",
+        amounttotal=25
     )
     meter.grid(row=1, column=0, columnspan=3, pady=(10, 0))
 
@@ -70,12 +63,12 @@ def launch_ui():
     # Energy usage and bill labels
     lblUsage = ttk.Label(root, text="Energy Usage", font=font_bold)
     lblUsage.grid(row=6, column=0)
-    lblUsageVal = ttk.Label(root, text=f"{current_usage} kWh", font=font_reg)
+    lblUsageVal = ttk.Label(root, text=f"{format(current_usage, '.1f')} kWh", font=font_reg)
     lblUsageVal.grid(row=7, column=0)
 
     lblBill = ttk.Label(root, text="Bill", font=font_bold)
     lblBill.grid(row=6, column=2)
-    lblBillVal = ttk.Label(root, text=f"£{bill}", font=font_reg)
+    lblBillVal = ttk.Label(root, text=f"N/A", font=font_reg)
     lblBillVal.grid(row=7, column=2)
 
     # Button to update gauge randomly
@@ -114,10 +107,8 @@ def launch_ui():
 
     # Start checking server connection, grid status, and bill updates
     update_time()
-    check_server_connection()
     check_grid_status()
-    auto_update_bill()
-    return root, update_gauge
+    return root, update_ui, update_server_connection
 
 
 # Function to smoothly update the gauge towards the target usage level
@@ -130,8 +121,8 @@ def smooth_update():
         current_usage -= 3 if (current_usage - target_usage > 10) else 1 if (current_usage - target_usage > 1) else (current_usage - target_usage)  # Decrement to decrease
 
     # Update the meter display and subtext
-    meter.configure(amountused=current_usage, subtext=f"{current_usage} kWh")
-    lblUsageVal.config(text=f"{current_usage} kWh")
+    meter.configure(amountused=format(current_usage, ".1f"), subtext="kWh")
+    lblUsageVal.config(text=f"{format(current_usage, '.1f')} kWh")
 
     # Change color based on usage level
     if current_usage < 33:
@@ -143,7 +134,11 @@ def smooth_update():
 
     # Continue updating until reaching the target
     if current_usage != target_usage:
-        root.after(20, smooth_update)  # Recursive call
+        root.after(25, smooth_update)  # Recursive call
+
+def update_ui(new_usage, new_bill):
+    update_gauge(new_usage)
+    update_bill(new_bill)
 
 # Function to set a new random target usage level
 def update_gauge(new_usage):
@@ -157,17 +152,12 @@ def update_time():
     lblTime.after(5000, update_time)
 
 # Function to update the bill based on usage
-def auto_update_bill():
-    global bill, current_usage
-    bill += current_usage * cost_per_kwh / 100  # Increment bill based on usage
-    lblBillVal.config(text=f"£{round(bill, 2)}")
-    root.after(5000, auto_update_bill)  # Schedule the next bill update in 5 seconds
+def update_bill(new_bill):
+    lblBillVal.config(text=f"£{round(new_bill, 2)}")
 
-# Function to simulate server communication
-def check_server_connection():
+def update_server_connection(is_connected):
     global connection_status
-    connection_success = choice([True, False])  # Simulate connection status
-    if connection_success:
+    if is_connected:
         connection_status = "strong"
         signal_status.config(text="✔️")
         lblConnectionError.config(text="")
@@ -176,8 +166,6 @@ def check_server_connection():
         signal_status.config(text="❌")
         lblConnectionError.config(text="Communication error with server", bootstyle="danger")
         logging.error("Communication error with server")  # Log error message
-    
-    root.after(10000, check_server_connection)
 
 # Function to simulate grid status check
 def check_grid_status():
