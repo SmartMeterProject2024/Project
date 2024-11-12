@@ -26,8 +26,8 @@ def launch_ui():
     # Create the main window with ttkbootstrap
     root = ttk.Window(themename="darkly")
     root.title("Smart Meter UI")
-    root.geometry("900x700")
-    root.minsize(900, 700)
+    root.geometry("900x600")
+    root.minsize(900, 600)
 
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
@@ -72,8 +72,8 @@ def launch_ui():
     lblBillVal.grid(row=7, column=2)
 
     # Button to update gauge randomly
-    btnRandomUsage = ttk.Button(root, text="Randomise Usage", bootstyle="outline-light", command=update_gauge)
-    btnRandomUsage.grid(row=8, column=0, columnspan=3, pady=20)
+    #btnRandomUsage = ttk.Button(root, text="Randomise Usage", bootstyle="outline-light", command=update_gauge)
+    #btnRandomUsage.grid(row=8, column=0, columnspan=3, pady=20)
 
     # Signal icon and status (bottom-right) for connection
     signal_frame = ttk.Frame(root)
