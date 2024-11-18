@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from json_converter import convert_to_json
 from reading_generator import wait_for_next_interval
-from reading_generator import generate_reading
+from reading_generator import generate_usage
 
 class TestClient(unittest.TestCase):
 
@@ -37,7 +37,7 @@ class TestClient(unittest.TestCase):
 
     def test_generate_reading(self):
         for _ in range(100):
-            number = generate_reading()
+            number = generate_usage()
             self.assertTrue(isinstance(number, (int, float)), "Reading is not a number")
             self.assertTrue(0 <= number, "Invalid Reading")
 
