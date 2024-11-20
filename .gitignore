@@ -1,1 +1,4 @@
 /Server/node_modules
+Client/__pycache__/*
+Client/Tests/__pycache__/*
+error_log.txt
