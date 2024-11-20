@@ -1,23 +1,31 @@
-To install necessary client libraries:
-```pip install -r requirements.txt```
+# PREREQUESITES:
+- NodeJS (for server)
+- Python (for client)
 
-To install necessary server libraries:
-```npm install```
 
----
+# DEPENDENCIES:
+In `Project\Server`, open cmd/powershell, type
+`npm install`  
+this will automatically install all dependencies
 
-To run server:
+In `Project\Client`, open cmd, type
+`pip install -r .\requirements.txt`
 
-```cd Server```
 
-```node index```
+# RUN PROGRAMS:
+In `Project\Server` type `node index`
+In `Project\Client` type `py index.py`  
+-note- for now, the server needs to be run before the client, as the client assumes there is an existing server and will error if there isnt. This will be error handled in future, and wont be a problem.
 
----
 
-To run client:
+# TROUBLESHOOTING:
+## Check you have Node
+in `Project\Server` type `node -v`
 
-```cd Client```
+## Check you have Python
+in `Project\Client` type `python -V`
 
-```py index.py```
-
----
+## Check you have pip (should be installed with python}
+In `Project\Client` type `pip -V`
+if you get an error, try `py -m pip -V`
+if that works, prefix any pip commands with `py -m`, otherwise, install pip using 
