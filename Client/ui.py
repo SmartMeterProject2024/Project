@@ -22,9 +22,14 @@ target_usage = 0
 current_usage = 0
 
 def launch_ui():
-    global root, meter, current_usage, target_usage, lblUsageVal, lblTime, lblDate, lblBillVal, signal_status, alert_status, lblGridError, lblConnectionError
+    global root, meter, current_usage, target_usage, lblUsageVal, lblTime, lblDate, lblBillVal, signal_status, alert_status, lblGridError, lblConnectionError, signal_icon, alert_icon, style
     # Create the main window with ttkbootstrap
     root = ttk.Window(themename="darkly")
+    
+    style = ttk.Style()
+    style.configure("success.TLabel", foreground="green", font=font_bold)
+    style.configure("danger.TLabel", foreground="red", font=font_bold)
+
     root.title("Smart Meter UI")
     root.geometry("900x600")
     root.minsize(900, 600)
@@ -80,18 +85,14 @@ def launch_ui():
     signal_frame.grid(row=9, column=2, sticky='e', pady=10, padx=10)
     signal_icon = ttk.Label(signal_frame, text="📶", font=font_bold, cursor="hand2")
     signal_icon.pack(side="left")
-    signal_status = ttk.Label(signal_frame, text="✔️", font=font_bold, cursor="hand2", width=2)
-    signal_status.pack(side="left")
-    signal_status.bind("<Button-1>", lambda e: show_connection_status())
+    signal_icon.bind("<Button-1>", lambda e: show_connection_status())
 
     # Alert icon and status (bottom-left) for grid issues
     alert_frame = ttk.Frame(root)
     alert_frame.grid(row=9, column=0, sticky='w', pady=10, padx=10)
     alert_icon = ttk.Label(alert_frame, text="🏭", font=font_bold, cursor="hand2")
     alert_icon.pack(side="left")
-    alert_status = ttk.Label(alert_frame, text="✔️", font=font_bold, cursor="hand2", width=2)
-    alert_status.pack(side="left")
-    alert_status.bind("<Button-1>", lambda e: show_grid_status())
+    alert_icon.bind("<Button-1>", lambda e: show_grid_status())
 
     # Separate error message labels for connection and grid issues
     lblConnectionError = ttk.Label(root, text="", font=font_small, bootstyle="danger")
@@ -156,15 +157,15 @@ def update_bill(new_bill):
     lblBillVal.config(text=f"£{round(new_bill, 2)}")
 
 def update_server_connection(is_connected):
-    global connection_status
+    global connection_status, signal_icon
     if is_connected:
         connection_status = "strong"
-        signal_status.config(text="✔️")
         lblConnectionError.config(text="")
+        signal_icon.config(style="success.TLabel")
     else:
         connection_status = "lost"
-        signal_status.config(text="❌")
         lblConnectionError.config(text="Communication error with server", bootstyle="danger")
+        signal_icon.config(style="danger.TLabel")
         logging.error("Communication error with server")  # Log error message
 
 # Function to simulate grid status check
@@ -173,13 +174,13 @@ def check_grid_status():
     grid_issue = choice([True, False])  # Simulate grid status
     if grid_issue:
         grid_status = "issue"
-        alert_status.config(text="❌")
         lblGridError.config(text="Electricity grid issue detected", bootstyle="danger")
+        alert_icon.config(style="danger.TLabel")
         logging.error("Electricity grid issue detected")  # Log grid issue
     else:
         grid_status = "no_issue"
-        alert_status.config(text="✔️")
         lblGridError.config(text="")
+        alert_icon.config(style="success.TLabel")
     
     root.after(15000, check_grid_status)
 
