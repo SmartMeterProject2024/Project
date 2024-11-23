@@ -6,8 +6,8 @@ import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from json_converter import convert_to_json
-from reading_generator import wait_for_next_interval
-from reading_generator import generate_usage
+from usage_generator import wait_for_next_interval
+from usage_generator import generate_usage
 
 class TestClient(unittest.TestCase):
 
@@ -23,8 +23,8 @@ class TestClient(unittest.TestCase):
         result = convert_to_json(id, time, usage)
         self.assertEqual(result, expected_result)
 
-    @patch('reading_generator.time.sleep', return_value=None) # the tests mock the time intervals
-    @patch('reading_generator.random.randint', side_effect=[15, 30, 40, 50, 60]) # example valid intervals to test
+    @patch('usage_generator.time.sleep', return_value=None) # the tests mock the time intervals
+    @patch('usage_generator.random.randint', side_effect=[15, 30, 40, 50, 60]) # example valid intervals to test
     def test_wait_for_next_interval(self, mock_randint, mock_sleep):
         for _ in range(5):
             wait_for_next_interval()
