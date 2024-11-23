@@ -1,10 +1,13 @@
 import threading
+import time
 import socketio
-import reading_generator
-#import json_converter as json
+import datetime
+import usage_generator
+#import json_converter
+from mvc.usage_controller import UsageController
 import json
-from datetime import datetime
-import ui as client_ui
+from mvc.usage_model import UsageModel
+from mvc.usage_view import UsageView
 import random
 
 # This is the number that identifies an end user. This is tied to the user's bill and account with the supplier.
@@ -18,8 +21,6 @@ secret = ''.join(random.choice(chars) for _ in range(64))
 
 socket = socketio.Client()
 connected = False
-bill = 0  # Initial bill amount
-current_usage = 2.1 # Initial usage
 
 @socket.event
 def connect():
@@ -41,29 +42,41 @@ def authResponse(data):
     else: 
         print("Authenticated")
         connected = True
-        update_server_status(True)
+        controller.update_server_status(True)
         # triggers 'handle_generated_reading' every interval in 'start_generating_readings()'
-        reading_generator.start_generating_readings(handle_generated_reading)
+        usage_generator.start_generating_usage(handle_generated_usage)
+    controller.update_server_status(True)
+    connected = True
 
 @socket.event
 def connection_error(data):
     global connected
     print("Failed to connect to server.")
     print(data)
-    update_server_status(False)
+    controller.update_server_status(False)
     connected = False
 
 @socket.event
 def disconnect():
     global connected
     print("Disconnected from client")
-    update_server_status(False)
+    controller.update_server_status(False)
     connected = False
 
-def handle_generated_reading(usage):
-    global bill, current_usage, id
+@socket.event
+def Hello(data):
+    global current_usage, bill
+    print("Hello message received: " + data)
+
+def start_generating_usage():
+    # Update every interval
+    usage_generator.start_generating_usage(handle_generated_usage)
+def handle_generated_usage(usage):
+    global id, controller
+    reading_to_send = controller.create_reading(usage)
     if connected:
-        time = datetime.now().isoformat()
+        time = reading_to_send.get_time()
+        current_usage = reading_to_send.get_usage()
         data = {
             "id": id,
             "time": time,
@@ -71,14 +84,11 @@ def handle_generated_reading(usage):
         }
         print(f"Sending Reading: {current_usage} kWh")
         socket.emit('reading', data)
-    current_usage = usage # prepare for next reading
     
 
 @socket.event
 def updateBill(data):
-    global bill, current_usage
-    bill = data
-    update_view(current_usage, bill)
+    controller.update_bill(data)
 
 @socket.event
 def warning(data):
@@ -92,23 +102,22 @@ def connect_to_server():
         socket.connect("http://localhost:3000")
     except: # socketio.exceptions.ConnectionError:
         print("Couldn't connect to Server. Retrying in 5 seconds...")
-        update_server_status(False)
-        view.after(5000, connect_to_server)
+        controller.update_server_status(False)
+        time.sleep(5)  # Wait for 5 seconds before retrying
+        connect_to_server()
 
 def start_connection_thread():
     connection_thread = threading.Thread(target=connect_to_server)
     connection_thread.start()
 
-def main():
-    global view, update_view, update_server_status
-    # Start the UI
-    view, update_view, update_server_status = client_ui.launch_ui()
-    current_usage = reading_generator.generate_usage()
-    # TODO: When mocking is complete, replace bill
-    update_view(current_usage, bill) # initial values
-    view.after(1500, start_connection_thread)  # Start connection attempt shortly after UI launch
-    view.mainloop()
-    
+if __name__ == "__main__":
+    global model, view, controller
+    model = UsageModel(usage_generator.generate_usage(), 0.0, 0.00) # to update total and bill from mock
+    view = UsageView()
+    controller = UsageController(model, view)
 
-if __name__ == '__main__':
-    main()
+    usage_thread = threading.Thread(target=start_generating_usage)
+    usage_thread.daemon = True # allows the thread to exit when the main program does
+    usage_thread.start()
+    start_connection_thread()
+    view.run()
