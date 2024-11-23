@@ -1,21 +1,49 @@
 import threading
 import socketio
 import reading_generator
-import json_converter as json
+#import json_converter as json
+import json
 from datetime import datetime
 import ui as client_ui
+import random
+
+# This is the number that identifies an end user. This is tied to the user's bill and account with the supplier.
+# It would be static per user, and entered upon installation into the home.
+id = random.getrandbits(32)
+# This is a secret value tied to the hardware unit. It proves the traffic to the server is from a credible source.
+# It would be static per device, assigned on hardware creation, not known by anyone other than the server upon pairing with user id
+chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+secret = ''.join(random.choice(chars) for _ in range(64))
+
 
 socket = socketio.Client()
 connected = False
-bill = 1.84  # Initial bill amount
+bill = 0  # Initial bill amount
 current_usage = 2.1 # Initial usage
 
 @socket.event
 def connect():
-    global connected
+    global id
     print("Connection established. (ID: " + socket.sid + ")")
-    update_server_status(True)
-    connected = True
+    print("Attempting authentication with server...")
+    data = {
+        "id": id,
+        "token": secret
+    }
+    socket.emit("authenticate", data, callback=authResponse)
+
+
+@socket.on("responseEvent")
+def authResponse(data):
+    global connected
+    if data == False: 
+        print("Authentication unsuccessful")
+    else: 
+        print("Authenticated")
+        connected = True
+        update_server_status(True)
+        # triggers 'handle_generated_reading' every interval in 'start_generating_readings()'
+        reading_generator.start_generating_readings(handle_generated_reading)
 
 @socket.event
 def connection_error(data):
@@ -32,36 +60,37 @@ def disconnect():
     update_server_status(False)
     connected = False
 
-@socket.event
-def Hello(data):
-    global current_usage, bill
-    print("Hello message received: " + data)
-    # triggers 'handle_generated_reading' every interval in 'start_generating_readings()'
-    reading_generator.start_generating_readings(handle_generated_reading)
-
 def handle_generated_reading(usage):
-    global bill, current_usage
+    global bill, current_usage, id
     if connected:
-        id = 123
         time = datetime.now().isoformat()
-        json_result = json.convert_to_json(id, time, current_usage)
+        data = {
+            "id": id,
+            "time": time,
+            "usage": current_usage
+        }
         print(f"Sending Reading: {current_usage} kWh")
-        socket.emit('Send_Reading', json_result)
-
-        # TODO: When server is set up, delete bill calculation
-        cost_per_kwh = 0.08
-        bill += (current_usage * cost_per_kwh)
-    update_view(usage, bill)
+        socket.emit('reading', data)
     current_usage = usage # prepare for next reading
+    
+
+@socket.event
+def updateBill(data):
+    global bill, current_usage
+    bill = data
+    update_view(current_usage, bill)
+
+@socket.event
+def warning(data):
+    # DISPLAY WARNING MESSAGE TO CLIENT
+    print("Warning received from server:")
+    print(data)
 
 def connect_to_server():
     print("Attempting to connect...")
     try:
-        global connected
         socket.connect("http://localhost:3000")
-        print("Connected")
-        connected = True
-    except socketio.exceptions.ConnectionError:
+    except: # socketio.exceptions.ConnectionError:
         print("Couldn't connect to Server. Retrying in 5 seconds...")
         update_server_status(False)
         view.after(5000, connect_to_server)

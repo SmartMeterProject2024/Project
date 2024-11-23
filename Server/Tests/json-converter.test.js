@@ -1,5 +1,5 @@
 const JsonToVariables = require('../proxy')
-
+/* Removed with JsonToVariables dependency removal
 describe('Convert JSON to Objects', () => {
   test('Should Convert a valid JSON Object', () => {
     const jsonObject = {id: 1234, time: "2024-10-29T21:07:28.484042", usage: 23.9};
@@ -12,3 +12,4 @@ describe('Convert JSON to Objects', () => {
     expect(usage).toEqual(expectedUsage)
   })
 })
+  */
