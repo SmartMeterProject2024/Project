@@ -1,6 +1,6 @@
 import threading
 import socketio
-import reading_generator
+import Client.usage_generator as usage_generator
 import json_converter as json
 from datetime import datetime
 import ui as client_ui
@@ -37,7 +37,7 @@ def Hello(data):
     global current_usage, bill
     print("Hello message received: " + data)
     # triggers 'handle_generated_reading' every interval in 'start_generating_readings()'
-    reading_generator.start_generating_readings(handle_generated_reading)
+    usage_generator.start_generating_readings(handle_generated_reading)
 
 def handle_generated_reading(usage):
     global bill, current_usage
@@ -74,7 +74,7 @@ def main():
     global view, update_view, update_server_status
     # Start the UI
     view, update_view, update_server_status = client_ui.launch_ui()
-    current_usage = reading_generator.generate_usage()
+    current_usage = usage_generator.generate_usage()
     # TODO: When mocking is complete, replace bill
     update_view(current_usage, bill) # initial values
     view.after(1500, start_connection_thread)  # Start connection attempt shortly after UI launch

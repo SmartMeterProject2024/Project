@@ -4,7 +4,7 @@ import time
 def handle_print_interval(interval): # Won't be triggered during tests
    print(f"(Next reading in {interval} seconds)")
 
-def start_generating_readings(callback):
+def start_generating_usage(callback):
   while True:
     wait_for_next_interval(handle_print_interval)
     num = generate_usage()
@@ -24,4 +24,4 @@ def generate_usage():
   return usage
 
 if __name__ == '__main__':
-    start_generating_readings()
+    start_generating_usage()

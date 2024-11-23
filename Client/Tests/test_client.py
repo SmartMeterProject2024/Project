@@ -6,8 +6,8 @@ import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from json_converter import convert_to_json
-from reading_generator import wait_for_next_interval
-from reading_generator import generate_usage
+from Client.usage_generator import wait_for_next_interval
+from Client.usage_generator import generate_usage
 
 class TestClient(unittest.TestCase):
 
