@@ -3,7 +3,7 @@ from datetime import datetime
 from reading import Reading
 
 
-class Controller:
+class UsageController:
     def __init__(self, model, view):
         self.model = model
         self.view = view

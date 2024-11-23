@@ -8,7 +8,7 @@ from datetime import datetime
 from tkinter import messagebox
 import logging
 
-class View:
+class UsageView:
   # Fonts
   font_reg = ("Verdana", 14, "normal")
   font_small = ("Verdana", 10, "normal")
@@ -34,7 +34,7 @@ class View:
       self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
       # Heading label
-      lblHeading = ttk.Label(self.root, text="Smart Meter", font=View.font_heading, anchor='center')
+      lblHeading = ttk.Label(self.root, text="Smart Meter", font=UsageView.font_heading, anchor='center')
       lblHeading.grid(row=0, column=0, columnspan=3, pady=(10, 0))
 
       # Create and place the Meter (gauge) widget
@@ -51,51 +51,51 @@ class View:
       self.meter.grid(row=1, column=0, columnspan=3, pady=(10, 0))
 
       # Current budget and time display
-      lblBudget = ttk.Label(self.root, text="Budget", font=View.font_small)
+      lblBudget = ttk.Label(self.root, text="Budget", font=UsageView.font_small)
       lblBudget.grid(row=5, column=0, columnspan=3)
 
       # Date label in the top-left
-      self.lblDate = ttk.Label(self.root, text=datetime.now().strftime("%Y-%m-%d"), font=View.font_bold)
+      self.lblDate = ttk.Label(self.root, text=datetime.now().strftime("%Y-%m-%d"), font=UsageView.font_bold)
       self.lblDate.grid(row=0, column=0, sticky='w', padx=10)
 
       # Time label in the top-right
-      self.lblTime = ttk.Label(self.root, text=datetime.now().strftime("%H:%M"), font=View.font_bold)
+      self.lblTime = ttk.Label(self.root, text=datetime.now().strftime("%H:%M"), font=UsageView.font_bold)
       self.lblTime.grid(row=0, column=2, sticky='e', padx=10)
 
       # Energy usage and bill labels
-      lblUsage = ttk.Label(self.root, text="Energy Usage", font=View.font_bold)
+      lblUsage = ttk.Label(self.root, text="Energy Usage", font=UsageView.font_bold)
       lblUsage.grid(row=6, column=0)
-      self.lblUsageVal = ttk.Label(self.root, text=f"{format(self.current_usage, '.1f')} kWh", font=View.font_reg)
+      self.lblUsageVal = ttk.Label(self.root, text=f"{format(self.current_usage, '.1f')} kWh", font=UsageView.font_reg)
       self.lblUsageVal.grid(row=7, column=0)
 
-      lblBill = ttk.Label(self.root, text="Bill", font=View.font_bold)
+      lblBill = ttk.Label(self.root, text="Bill", font=UsageView.font_bold)
       lblBill.grid(row=6, column=2)
-      self.lblBillVal = ttk.Label(self.root, text=f"N/A", font=View.font_reg)
+      self.lblBillVal = ttk.Label(self.root, text=f"N/A", font=UsageView.font_reg)
       self.lblBillVal.grid(row=7, column=2)
 
       # Signal icon and status (bottom-right) for connection
       self.signal_frame = ttk.Frame(self.root)
       self.signal_frame.grid(row=9, column=2, sticky='e', pady=10, padx=10)
-      self.signal_icon = ttk.Label(self.signal_frame, text="📶", font=View.font_bold, cursor="hand2")
+      self.signal_icon = ttk.Label(self.signal_frame, text="📶", font=UsageView.font_bold, cursor="hand2")
       self.signal_icon.pack(side="left")
-      self.signal_status = ttk.Label(self.signal_frame, text="✔️", font=View.font_bold, cursor="hand2", width=2)
+      self.signal_status = ttk.Label(self.signal_frame, text="✔️", font=UsageView.font_bold, cursor="hand2", width=2)
       self.signal_status.pack(side="left")
       self.signal_status.bind("<Button-1>", lambda e: self.show_connection_status())
 
       # Alert icon and status (bottom-left) for grid issues
       self.alert_frame = ttk.Frame(self.root)
       self.alert_frame.grid(row=9, column=0, sticky='w', pady=10, padx=10)
-      self.alert_icon = ttk.Label(self.alert_frame, text="🏭", font=View.font_bold, cursor="hand2")
+      self.alert_icon = ttk.Label(self.alert_frame, text="🏭", font=UsageView.font_bold, cursor="hand2")
       self.alert_icon.pack(side="left")
-      self.alert_status = ttk.Label(self.alert_frame, text="✔️", font=View.font_bold, cursor="hand2", width=2)
+      self.alert_status = ttk.Label(self.alert_frame, text="✔️", font=UsageView.font_bold, cursor="hand2", width=2)
       self.alert_status.pack(side="left")
       self.alert_status.bind("<Button-1>", lambda e: self.show_grid_status())
 
       # Separate error message labels for connection and grid issues
-      self.lblConnectionError = ttk.Label(self.root, text="", font=View.font_small, bootstyle="danger")
+      self.lblConnectionError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
       self.lblConnectionError.grid(row=2, column=0, columnspan=3, pady=(5, 0))
 
-      self.lblGridError = ttk.Label(self.root, text="", font=View.font_small, bootstyle="danger")
+      self.lblGridError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
       self.lblGridError.grid(row=3, column=0, columnspan=3, pady=(5, 0))
 
       # Configure grid to expand
