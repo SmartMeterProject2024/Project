@@ -1,19 +1,50 @@
 import threading
 import time
 import socketio
+import datetime
 import usage_generator
-import json_converter
+#import json_converter
 from mvc.usage_controller import UsageController
+import json
 from mvc.usage_model import UsageModel
 from mvc.usage_view import UsageView
+import random
+
+# This is the number that identifies an end user. This is tied to the user's bill and account with the supplier.
+# It would be static per user, and entered upon installation into the home.
+id = random.getrandbits(32)
+# This is a secret value tied to the hardware unit. It proves the traffic to the server is from a credible source.
+# It would be static per device, assigned on hardware creation, not known by anyone other than the server upon pairing with user id
+chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+secret = ''.join(random.choice(chars) for _ in range(64))
+
 
 socket = socketio.Client()
 connected = False
 
 @socket.event
 def connect():
-    global connected
+    global id
     print("Connection established. (ID: " + socket.sid + ")")
+    print("Attempting authentication with server...")
+    data = {
+        "id": id,
+        "token": secret
+    }
+    socket.emit("authenticate", data, callback=authResponse)
+
+
+@socket.on("responseEvent")
+def authResponse(data):
+    global connected
+    if data == False: 
+        print("Authentication unsuccessful")
+    else: 
+        print("Authenticated")
+        connected = True
+        controller.update_server_status(True)
+        # triggers 'handle_generated_reading' every interval in 'start_generating_readings()'
+        usage_generator.start_generating_usage(handle_generated_usage)
     controller.update_server_status(True)
     connected = True
 
@@ -40,15 +71,36 @@ def Hello(data):
 def start_generating_usage():
     # Update every interval
     usage_generator.start_generating_usage(handle_generated_usage)
+def handle_generated_usage(usage):
+    global id, controller
+    reading_to_send = controller.create_reading(usage)
+    if connected:
+        time = reading_to_send.get_time()
+        current_usage = reading_to_send.get_usage()
+        data = {
+            "id": id,
+            "time": time,
+            "usage": current_usage
+        }
+        print(f"Sending Reading: {current_usage} kWh")
+        socket.emit('reading', data)
+    
+
+@socket.event
+def updateBill(data):
+    controller.update_bill(data)
+
+@socket.event
+def warning(data):
+    # DISPLAY WARNING MESSAGE TO CLIENT
+    print("Warning received from server:")
+    print(data)
 
 def connect_to_server():
     print("Attempting to connect...")
     try:
-        global connected
         socket.connect("http://localhost:3000")
-        print("Connected")
-        connected = True
-    except socketio.exceptions.ConnectionError:
+    except: # socketio.exceptions.ConnectionError:
         print("Couldn't connect to Server. Retrying in 5 seconds...")
         controller.update_server_status(False)
         time.sleep(5)  # Wait for 5 seconds before retrying
@@ -57,22 +109,6 @@ def connect_to_server():
 def start_connection_thread():
     connection_thread = threading.Thread(target=connect_to_server)
     connection_thread.start()
-
-def handle_generated_usage(new_usage):
-    global controller
-    reading_to_send = controller.create_reading(new_usage)
-    if connected:
-        id = 123
-        time = reading_to_send.get_time()
-        current_usage = reading_to_send.get_usage()
-        json_result = json_converter.convert_to_json(id, time, current_usage)
-        print(f"Sending Reading: {current_usage} kWh")
-        socket.emit('Send_Reading', json_result)
-
-        # TODO: When server is set up, delete bill calculation
-        cost_per_kwh = 0.08
-        added_bill = (current_usage * cost_per_kwh)
-        controller.update_bill(added_bill)
 
 if __name__ == "__main__":
     global model, view, controller

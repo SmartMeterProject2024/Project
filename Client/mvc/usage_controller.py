@@ -21,8 +21,8 @@ class UsageController:
         self.update_view()
         return new_reading
     
-    def update_bill(self, reading_cost):
-        self.model.set_bill(self.model.get_bill() + reading_cost)
+    def update_bill(self, newTotalBill):
+        self.model.set_bill(newTotalBill)
         self.update_view()
 
     def update_view(self):
