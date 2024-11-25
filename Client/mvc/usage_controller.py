@@ -29,6 +29,7 @@ class UsageController:
         usage = self.model.get_current_usage()
         bill = self.model.get_bill()
         self.view.update_ui(usage, bill)
+        print(bill)
 
     def update_server_status(self, connected):
         self.view.update_server_connection(connected)

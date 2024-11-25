@@ -35,18 +35,17 @@ def connect():
 
 
 @socket.on("responseEvent")
-def authResponse(data):
+def authResponse(data, initial_bill):
     global connected
     if data == False: 
         print("Authentication unsuccessful")
+        connected = False
+        controller.update_server_status(False)
     else: 
         print("Authenticated")
         connected = True
         controller.update_server_status(True)
-        # triggers 'handle_generated_reading' every interval in 'start_generating_readings()'
-        usage_generator.start_generating_usage(handle_generated_usage)
-    controller.update_server_status(True)
-    connected = True
+        controller.update_bill(initial_bill)
 
 @socket.event
 def connection_error(data):
@@ -69,8 +68,9 @@ def Hello(data):
     print("Hello message received: " + data)
 
 def start_generating_usage():
-    # Update every interval
+    # triggers 'handle_generated_usage' every interval in 'start_generating_usage()'
     usage_generator.start_generating_usage(handle_generated_usage)
+
 def handle_generated_usage(usage):
     global id, controller
     reading_to_send = controller.create_reading(usage)
@@ -110,14 +110,16 @@ def start_connection_thread():
     connection_thread = threading.Thread(target=connect_to_server)
     connection_thread.start()
 
+def start_usage_generator_thread(): 
+    usage_thread = threading.Thread(target=start_generating_usage)
+    usage_thread.daemon = True # allows the thread to exit when the main program does
+    usage_thread.start()
+
 if __name__ == "__main__":
     global model, view, controller
     model = UsageModel(usage_generator.generate_usage(), 0.0, 0.00) # to update total and bill from mock
     view = UsageView()
     controller = UsageController(model, view)
-
-    usage_thread = threading.Thread(target=start_generating_usage)
-    usage_thread.daemon = True # allows the thread to exit when the main program does
-    usage_thread.start()
+    start_usage_generator_thread()
     start_connection_thread()
     view.run()

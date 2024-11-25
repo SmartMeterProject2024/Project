@@ -39,7 +39,7 @@ server.on("connection", (socket) => {
         } else {
             socket.disconnect()
         }
-        callback(authenticated)
+        callback(authenticated, billTotal)
     })
 
     socket.on("reading", (data) => {
