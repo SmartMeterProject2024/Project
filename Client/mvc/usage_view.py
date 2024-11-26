@@ -31,6 +31,10 @@ class UsageView:
       self.root.geometry("900x600")
       self.root.minsize(900, 600)
 
+      style = ttk.Style()
+      style.configure("success.TLabel", foreground="green", font=UsageView.font_bold)
+      style.configure("danger.TLabel", foreground="red", font=UsageView.font_bold)
+
       self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
       # Heading label
@@ -78,18 +82,14 @@ class UsageView:
       self.signal_frame.grid(row=9, column=2, sticky='e', pady=10, padx=10)
       self.signal_icon = ttk.Label(self.signal_frame, text="📶", font=UsageView.font_bold, cursor="hand2")
       self.signal_icon.pack(side="left")
-      self.signal_status = ttk.Label(self.signal_frame, text="✔️", font=UsageView.font_bold, cursor="hand2", width=2)
-      self.signal_status.pack(side="left")
-      self.signal_status.bind("<Button-1>", lambda e: self.show_connection_status())
+      self.signal_icon.bind("<Button-1>", lambda e: self.show_connection_status())
 
       # Alert icon and status (bottom-left) for grid issues
       self.alert_frame = ttk.Frame(self.root)
       self.alert_frame.grid(row=9, column=0, sticky='w', pady=10, padx=10)
       self.alert_icon = ttk.Label(self.alert_frame, text="🏭", font=UsageView.font_bold, cursor="hand2")
       self.alert_icon.pack(side="left")
-      self.alert_status = ttk.Label(self.alert_frame, text="✔️", font=UsageView.font_bold, cursor="hand2", width=2)
-      self.alert_status.pack(side="left")
-      self.alert_status.bind("<Button-1>", lambda e: self.show_grid_status())
+      self.alert_icon.bind("<Button-1>", lambda e: self.show_grid_status())
 
       # Separate error message labels for connection and grid issues
       self.lblConnectionError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
@@ -117,8 +117,8 @@ class UsageView:
           self.current_usage -= 3 if (self.current_usage - self.target_usage > 10) else 1 if (self.current_usage - self.target_usage > 1) else (self.current_usage - self.target_usage)  # Decrement to decrease
 
       # Update the meter display and subtext
-      self.meter.configure(amountused=format(self.current_usage, ".1f"), subtext="kWh")
-      self.lblUsageVal.config(text=f"{format(self.current_usage, '.1f')} kWh")
+      self.meter.configure(amountused=format(self.current_usage, ".2f"), subtext="kWh")
+      self.lblUsageVal.config(text=f"{format(self.current_usage, '.2f')} kWh")
 
       # Change color based on usage level
       if self.current_usage < 33:
@@ -148,31 +148,31 @@ class UsageView:
 
   # Function to update the bill based on usage
   def update_bill(self, new_bill):
-      self.lblBillVal.config(text=f"£{round(new_bill, 2)}")
+      self.lblBillVal.config(text=f"£{format(new_bill, '.2f')}")
 
   # Function to update connectivity status of server
   def update_server_connection(self, is_connected):
       if is_connected:
           self.connection_status = "strong"
-          self.signal_status.config(text="✔️")
           self.lblConnectionError.config(text="")
+          self.signal_icon.config(style="success.TLabel")
       else:
           self.connection_status = "lost"
-          self.signal_status.config(text="❌")
           self.lblConnectionError.config(text="Communication error with server", bootstyle="danger")
           logging.error("Communication error with server")  # Log error message
+          self.signal_icon.config(style="danger.TLabel")
 
   # Function to update connectivity status of power grid
   def update_grid_connection(self, is_connected):
     if is_connected:
         self.grid_status = "no_issue"
-        self.alert_status.config(text="✔️")
         self.lblGridError.config(text="")
+        self.alert_icon.config(style="success.TLabel")
     else:
         self.grid_status = "issue"
-        self.alert_status.config(text="❌")
         self.lblGridError.config(text="Electricity grid issue detected", bootstyle="danger")
         logging.error("Electricity grid issue detected")  # Log grid issue
+        self.alert_icon.config(style="danger.TLabel")
 
   # Function to show connection status on click
   def show_connection_status(self):
