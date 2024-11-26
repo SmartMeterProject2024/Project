@@ -193,3 +193,8 @@ gridSocket.on("issue", (message) => {
     console.log(`Warning issued by grid: ${message}`)
     server.emit("warning", message)
 })
+
+gridSocket.on("issue_resolved", () => {
+    console.log("Grid issue resolved")
+    server.emit("resolved")
+})

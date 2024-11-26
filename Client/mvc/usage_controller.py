@@ -33,6 +33,9 @@ class UsageController:
     def update_server_status(self, connected):
         self.view.update_server_connection(connected)
 
+    def update_grid_status(self, connected):
+        self.view.update_grid_connection(connected)
+
     def handle_submit(self):
         data = self.view.entry.get()
         self.model.set_data(data)

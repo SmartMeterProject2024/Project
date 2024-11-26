@@ -105,7 +105,6 @@ class UsageView:
 
       # Start checking server connection, grid status, and bill updates
       self.update_time()
-      self.check_grid_status()
       return self.root, self.update_ui, self.update_server_connection
 
 
@@ -151,6 +150,7 @@ class UsageView:
   def update_bill(self, new_bill):
       self.lblBillVal.config(text=f"£{round(new_bill, 2)}")
 
+  # Function to update connectivity status of server
   def update_server_connection(self, is_connected):
       if is_connected:
           self.connection_status = "strong"
@@ -162,20 +162,17 @@ class UsageView:
           self.lblConnectionError.config(text="Communication error with server", bootstyle="danger")
           logging.error("Communication error with server")  # Log error message
 
-  # Function to simulate grid status check
-  def check_grid_status(self):
-    grid_issue = choice([True, False])  # Simulate grid status
-    if grid_issue:
+  # Function to update connectivity status of power grid
+  def update_grid_connection(self, is_connected):
+    if is_connected:
+        self.grid_status = "no_issue"
+        self.alert_status.config(text="✔️")
+        self.lblGridError.config(text="")
+    else:
         self.grid_status = "issue"
         self.alert_status.config(text="❌")
         self.lblGridError.config(text="Electricity grid issue detected", bootstyle="danger")
         logging.error("Electricity grid issue detected")  # Log grid issue
-    else:
-        self.grid_status = "no_issue"
-        self.alert_status.config(text="✔️")
-        self.lblGridError.config(text="")
-    
-    self.root.after(15000, self.check_grid_status)
 
   # Function to show connection status on click
   def show_connection_status(self):

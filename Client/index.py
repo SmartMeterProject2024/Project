@@ -84,9 +84,16 @@ def updateBill(data):
 
 @socket.event
 def warning(data):
+    global controller
     # DISPLAY WARNING MESSAGE TO CLIENT
     print("Warning received from server:")
     print(data)
+    controller.update_grid_status(False)
+    
+@socket.event
+def resolved():
+    print("Warning resolution received from server")
+    controller.update_grid_status(True)
 
 def connect_to_server():
     print("Attempting to connect...")
