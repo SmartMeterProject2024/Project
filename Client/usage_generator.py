@@ -10,7 +10,7 @@ def start_generating_usage(callback):
     num = generate_usage()
     callback(num)
 
-def wait_for_next_interval(callback=None): # Implementation - callback | Test - none
+def wait_for_next_interval(callback=None): # Sends interval to be printed
    # start timer for next generated reading
     interval = random.randint(15, 60)
     if callback is not None:
