@@ -122,8 +122,8 @@ def smooth_update():
         current_usage -= 3 if (current_usage - target_usage > 10) else 1 if (current_usage - target_usage > 1) else (current_usage - target_usage)  # Decrement to decrease
 
     # Update the meter display and subtext
-    meter.configure(amountused=format(current_usage, ".1f"), subtext="kWh")
-    lblUsageVal.config(text=f"{format(current_usage, '.1f')} kWh")
+    meter.configure(amountused=format(current_usage, ".2f"), subtext="kWh")
+    lblUsageVal.config(text=f"{format(current_usage, '.2f')} kWh")
 
     # Change color based on usage level
     if current_usage < 33:
@@ -154,7 +154,7 @@ def update_time():
 
 # Function to update the bill based on usage
 def update_bill(new_bill):
-    lblBillVal.config(text=f"£{round(new_bill, 2)}")
+    lblBillVal.config(text=f"£{format(new_bill, '.2f')}")
 
 def update_server_connection(is_connected):
     global connection_status, signal_icon
