@@ -39,7 +39,7 @@ server.on("connection", (socket) => {
         } else {
             socket.disconnect()
         }
-        callback(authenticated)
+        callback(authenticated, billTotal)
     })
 
     socket.on("reading", (data) => {
@@ -192,4 +192,9 @@ gridSocket.on("disconnect", (reason) => {
 gridSocket.on("issue", (message) => {
     console.log(`Warning issued by grid: ${message}`)
     server.emit("warning", message)
+})
+
+gridSocket.on("issue_resolved", () => {
+    console.log("Grid issue resolved")
+    server.emit("resolved")
 })

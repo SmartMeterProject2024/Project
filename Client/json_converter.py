@@ -1,11 +1,11 @@
 import json
 
-def convert_to_json(id, time, usage):
+def convert_to_json(id, reading):
     # Create a dictionary
     data = {
         "id": id,
-        "time": time,
-        "usage": usage
+        "time": reading.get_time(),
+        "usage": reading.get_usage()
     }
     # Convert the dictionary to a JSON string
     json_object = json.dumps(data, indent=4)

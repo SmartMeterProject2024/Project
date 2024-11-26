@@ -43,6 +43,9 @@ async function issueLoop () {
         console.log(`Issue detected: ${chosenIssue}`)
         console.log(`Broadcasting issue`)
         io.emit(`issue`, chosenIssue)
+        await timer(Math.floor(Math.random() * 10000) + 10000) // error for 10-20 seconds
+        io.emit(`issue_resolved`)
+        console.log(`Issue resolved`)
     }
   }
 
