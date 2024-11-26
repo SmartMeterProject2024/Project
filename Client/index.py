@@ -1,7 +1,6 @@
 import threading
 import time
 import socketio
-import json_converter
 import usage_generator
 from mvc.usage_controller import UsageController
 from mvc.usage_model import UsageModel
@@ -70,10 +69,16 @@ def start_generating_usage():
     usage_generator.start_generating_usage(handle_generated_usage)
 
 def handle_generated_usage(usage):
-    global id, controller
+    global id, controller, connected
     reading_to_send = controller.create_reading(usage)
     if connected:
-        data = json_converter.convert_to_json(id, reading_to_send)
+        # a Python dictionary automatically converts into a JSON object
+        # which is sent to the server so no need for a JSON formatter
+        data = {
+            "id": id,
+            "time": reading_to_send.get_time(),
+            "usage": reading_to_send.get_usage()
+        }
         print(f"Sending Reading: {reading_to_send.get_usage()} kWh")
         socket.emit('reading', data)
     

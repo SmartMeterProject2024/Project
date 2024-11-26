@@ -21,7 +21,7 @@ def generate_usage():
   num = random.randint(0, 250) # inclusive
   # 1 decimal place
   usage = (num if num == 0 else num / 10)
-  return usage
+  return float(usage)
 
 if __name__ == '__main__':
     start_generating_usage()
