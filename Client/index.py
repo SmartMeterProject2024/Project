@@ -68,9 +68,10 @@ def start_generating_usage():
     # triggers 'handle_generated_usage' every interval in 'start_generating_usage()'
     usage_generator.start_generating_usage(handle_generated_usage)
 
-def handle_generated_usage(usage):
+def handle_generated_usage(interval, new_usage):
     global id, controller, connected
-    reading_to_send = controller.create_reading(usage)
+    reading_to_send = controller.create_reading()
+    controller.update_usage_display(interval, new_usage)
     if connected:
         # a Python dictionary automatically converts into a JSON object
         # which is sent to the server so no need for a JSON formatter
@@ -112,6 +113,7 @@ def connect_to_server():
 
 def start_connection_thread():
     connection_thread = threading.Thread(target=connect_to_server)
+    connection_thread.daemon = True # allows the thread to exit when the main program does
     connection_thread.start()
 
 def start_usage_generator_thread(): 
