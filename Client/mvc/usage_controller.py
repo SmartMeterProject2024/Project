@@ -41,8 +41,3 @@ class UsageController:
 
     def update_grid_status(self, connected, message=""):
         self.view.update_grid_connection(connected, "Issue with grid detected - " + message)
-
-    def handle_submit(self):
-        data = self.view.entry.get()
-        self.model.set_data(data)
-        self.view.show_message(f"You entered: {self.model.get_data()}")
