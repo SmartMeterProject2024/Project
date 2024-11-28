@@ -42,13 +42,13 @@ async function priceLoop () {
 issueList = ["issue 1", "issue 2", "issue 3"]
 async function issueLoop () {
     while (true) {
-        await timer((Math.floor(Math.random() * 300) + 60) * 1000) // wait 1-5 minutes between issues
+        await timer((Math.floor(Math.random() * 180) + 60) * 1000) // wait 1-4 minutes between issues
         chosenIssue = issueList[Math.floor(Math.random() * issueList.length)]
         console.log(`Issue detected: ${chosenIssue}`)
         console.log(`Broadcasting issue`)
         grid_errored = true
         io.emit(`issue`, chosenIssue)
-        await timer(Math.floor(Math.random() * 10000) + 10000) // error for 10-20 seconds
+        await timer(Math.floor(Math.random() * 15000) + 15000) // error for 15-30 seconds
         grid_errored = false
         io.emit(`issue_resolved`)
         console.log(`Issue resolved`)

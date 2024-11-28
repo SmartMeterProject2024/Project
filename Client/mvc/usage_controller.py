@@ -13,11 +13,11 @@ class UsageController:
         # converting from current usage kW to total usage kWh, accounting for time spent on current usage
         # new_total_usage = self.model.get_total_usage() + (self.model.get_current_usage() * (seconds_since_last / 3600.0))
         # for the sake of the demo, we'll treat 1 second as 1 minute so total usage is visible
-        print("total usage before: " + str(self.model.get_total_usage()))
+        print("total usage before: " + str(self.model.get_total_usage()) + " kWh")
         new_total_usage = self.model.get_total_usage() + (self.model.get_current_usage() * (seconds_since_last / 60.0))
         self.model.set_current_usage(new_usage)
         self.model.set_total_usage(new_total_usage)
-        print("total usage: " + str(self.model.get_total_usage()))
+        print("total usage: " + str(self.model.get_total_usage()) + " kWh")
         self.update_view()
 
     def create_reading(self):
@@ -39,8 +39,8 @@ class UsageController:
     def update_server_status(self, connected):
         self.view.update_server_connection(connected)
 
-    def update_grid_status(self, connected):
-        self.view.update_grid_connection(connected)
+    def update_grid_status(self, connected, message=""):
+        self.view.update_grid_connection(connected, "Issue with grid detected - " + message)
 
     def handle_submit(self):
         data = self.view.entry.get()

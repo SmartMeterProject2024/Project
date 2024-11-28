@@ -78,7 +78,6 @@ server.on("connection", (socket) => {
     })
 
     socket.on("check_grid_status", (callback) => {
-        console.log("here")
         socket.emit("grid_status", (response) => {
             callback(response)
         })

@@ -63,6 +63,7 @@ def disconnect():
     print("Disconnected from client")
     controller.update_server_status(False)
     connected = False
+    controller.update_grid_status(False)
 
 def start_generating_usage():
     # triggers 'handle_generated_usage' every interval in 'start_generating_usage()'
@@ -80,7 +81,7 @@ def handle_generated_usage(interval, new_usage):
             "time": reading_to_send.get_time(),
             "usage": reading_to_send.get_usage()
         }
-        print(f"Sending Reading: {reading_to_send.get_usage()} kWh")
+        print(f"Sending Reading: {reading_to_send.get_usage()} kW")
         socket.emit('reading', data)
     
 
@@ -89,12 +90,11 @@ def updateBill(data):
     controller.update_bill(data)
 
 @socket.event
-def warning(data):
+def warning(message):
     global controller
     # DISPLAY WARNING MESSAGE TO CLIENT
-    print("Warning received from server:")
-    print(data)
-    controller.update_grid_status(False)
+    print("Warning received from server: " + message)
+    controller.update_grid_status(False, message)
     
 @socket.event
 def resolved():
