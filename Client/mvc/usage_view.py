@@ -161,6 +161,7 @@ class UsageView:
           self.lblConnectionError.config(text="Communication error with server", bootstyle="danger")
           logging.error("Communication error with server")  # Log error message
           self.signal_icon.config(style="danger.TLabel")
+          self.update_grid_connection(False)
 
   # Function to update connectivity status of power grid
   def update_grid_connection(self, is_connected):

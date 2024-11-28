@@ -43,6 +43,11 @@ def authResponse(data, initial_bill):
         connected = True
         controller.update_server_status(True)
         controller.update_bill(initial_bill)
+        socket.emit("check_grid_status", callback=receive_grid_status)
+
+@socket.on("responseEvent")
+def receive_grid_status(is_errored):
+    controller.update_grid_status(not is_errored)
 
 @socket.event
 def connection_error(data):
@@ -58,11 +63,6 @@ def disconnect():
     print("Disconnected from client")
     controller.update_server_status(False)
     connected = False
-
-@socket.event
-def Hello(data):
-    global current_usage, bill
-    print("Hello message received: " + data)
 
 def start_generating_usage():
     # triggers 'handle_generated_usage' every interval in 'start_generating_usage()'

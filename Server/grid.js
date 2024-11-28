@@ -3,7 +3,7 @@ const io = new Server({ /* options */ });
 const port = 3001
 
 var energyCost = 0.08
-
+var grid_errored = false
 
 io.on("connection", (socket) => {
     console.log(`Connection established (ID: ${socket.id})`)
@@ -12,6 +12,10 @@ io.on("connection", (socket) => {
     socket.on("disconnect", (reason) => {
         console.log(`Socket ${socket.id} disconnected`)
     })
+
+    socket.on('check_status', (callback) => {
+      callback(grid_errored);
+  });
 });
 
 const timer = ms => new Promise(res => setTimeout(res, ms))
@@ -42,8 +46,10 @@ async function issueLoop () {
         chosenIssue = issueList[Math.floor(Math.random() * issueList.length)]
         console.log(`Issue detected: ${chosenIssue}`)
         console.log(`Broadcasting issue`)
+        grid_errored = true
         io.emit(`issue`, chosenIssue)
         await timer(Math.floor(Math.random() * 10000) + 10000) // error for 10-20 seconds
+        grid_errored = false
         io.emit(`issue_resolved`)
         console.log(`Issue resolved`)
     }
