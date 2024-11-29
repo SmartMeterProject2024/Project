@@ -1,6 +1,9 @@
 const { Server } = require("socket.io");
 const server = new Server({ /* options */ });
 const io = require('socket.io-client')
+const BillCalculator = require('./BillCalculationStrategy/billCalculator.js');
+const BillByHistoricStrategy = require('./BillCalculationStrategy/billCalculateByHistoric.js');
+const BillByNewReadingStrategy = require('./BillCalculationStrategy/billCalculateByNewReading.js');
 const gridURL = "http://localhost:3001";
 let gridSocket = io.connect(gridURL)
 const http = require(`http`)
@@ -8,6 +11,9 @@ const port = 3000
 const connections = {}
 
 var energyCost
+const billByHistoricStrategy = new BillByHistoricStrategy()
+const billByNewReadingStrategy = new BillByNewReadingStrategy()
+const billCalculator = new BillCalculator(billByHistoricStrategy);
 
 function checkAuth(id) {
     for (conn in connections) {
@@ -53,12 +59,17 @@ server.on("connection", (socket) => {
             socket.emit("warning", "Authentication failed")
             return 
         }
-        readingCost = data.usage * energyCost
-        connections[data.id].bill += readingCost
-        // LOG READING TO DATABASE
-        DBLogReading(data.id, data.time, readingCost)
-        console.log(`Reading from ${data.id}: ${data.usage} (£${readingCost}, £${connections[data.id].bill})`)
-        socket.emit("updateBill", connections[data.id].bill)
+        try {
+            // Calculate updated bill
+            billCalculator.setStrategy(billByNewReadingStrategy)
+            connections[data.id].bill = billCalculator.calculateBill(data.usage, energyCost, connections[data.id].bill)
+            // LOG READING TO DATABASE
+            DBLogReading(data.id, data.time, data.usage * energyCost)
+            console.log(`Reading from ${data.id}: ${data.usage} (£${data.usage * energyCost}, £${connections[data.id].bill})`)
+            socket.emit("updateBill", connections[data.id].bill)
+        } catch (error) {
+            console.log(error.message)
+        }
     })
     
     socket.on("disconnect", (reason) => {
@@ -97,11 +108,14 @@ async function getBillTotal(id) {
                 bodyChunks.push(chunk);
             }).on('end', function() {
                 var body = Buffer.concat(bodyChunks);
-                for (r in JSON.parse(body)) {
-                    //console.log(JSON.parse(body)[r])
-                    //console.log(`Cost: ${JSON.parse(body)[r].cost}`)
-                    billTotal += JSON.parse(body)[r].cost
-                }
+                // JSON to array filtered by costs
+                const costs = JSON.parse(body).map(reading => reading.cost);
+                try {
+                    billCalculator.setStrategy(billByHistoricStrategy)
+                    billTotal = billCalculator.calculateBill(costs)
+                } catch (error) {
+                    console.log(error.message)
+                } // don't amend bill if error
                 resolve(billTotal)
             })
         });
