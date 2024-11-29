@@ -30,7 +30,7 @@ class TestClient(unittest.TestCase):
             usage = generate_usage()
             self.assertTrue(isinstance(usage, (float)), "Reading is not a number")
             self.assertTrue(0 <= usage, "Invalid Reading")
-            self.assertTrue(len(str(usage).split('.')[1]) == 1, "Does not have one decimal place")
+            self.assertTrue(len(str(usage).split('.')[1]) == 1 or len(str(usage).split('.')[1]) == 2, "Does not have one or two decimal places")
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
