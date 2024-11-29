@@ -71,8 +71,9 @@ def start_generating_usage():
 
 def handle_generated_usage(interval, new_usage):
     global id, controller, connected
+    controller.update_usage_stats(interval, new_usage)
     reading_to_send = controller.create_reading()
-    controller.update_usage_display(interval, new_usage)
+    controller.update_usage_display()
     if connected:
         # a Python dictionary automatically converts into a JSON object
         # which is sent to the server so no need for a JSON formatter
@@ -81,7 +82,7 @@ def handle_generated_usage(interval, new_usage):
             "time": reading_to_send.get_time(),
             "usage": reading_to_send.get_usage()
         }
-        print(f"Sending Reading: {reading_to_send.get_usage()} kW")
+        print(f"Sending Reading: {reading_to_send.get_usage()} kWh")
         socket.emit('reading', data)
     
 
