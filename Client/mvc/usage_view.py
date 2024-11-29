@@ -161,16 +161,17 @@ class UsageView:
           self.lblConnectionError.config(text="Communication error with server", bootstyle="danger")
           logging.error("Communication error with server")  # Log error message
           self.signal_icon.config(style="danger.TLabel")
+          self.update_grid_connection(False)
 
   # Function to update connectivity status of power grid
-  def update_grid_connection(self, is_connected):
+  def update_grid_connection(self, is_connected, message=""):
     if is_connected:
         self.grid_status = "no_issue"
         self.lblGridError.config(text="")
         self.alert_icon.config(style="success.TLabel")
     else:
         self.grid_status = "issue"
-        self.lblGridError.config(text="Electricity grid issue detected", bootstyle="danger")
+        self.lblGridError.config(text=message, bootstyle="danger")
         logging.error("Electricity grid issue detected")  # Log grid issue
         self.alert_icon.config(style="danger.TLabel")
 

@@ -1,31 +1,14 @@
 import sys
 import os
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, patch
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from reading import Reading
-from json_converter import convert_to_json
 from usage_generator import wait_for_next_interval
 from usage_generator import generate_usage
 
 class TestClient(unittest.TestCase):
-
-    def test_reading_to_json(self):
-        id = 123
-        time = "2024-10-29T21:07:28.484042"
-        usage = 45.67
-        new_reading = Reading(time, usage)
-
-        expected_result = {
-            "id": id,
-            "time": time,
-            "usage": usage
-        }
-
-        result = convert_to_json(id, new_reading)
-        self.assertEqual(result, expected_result)
 
     @patch('usage_generator.time.sleep', return_value=None) # mock the time intervals
     def test_wait_for_next_interval(self, mock_sleep):

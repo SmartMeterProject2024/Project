@@ -1,7 +1,6 @@
 import threading
 import time
 import socketio
-import json_converter
 import usage_generator
 from mvc.usage_controller import UsageController
 from mvc.usage_model import UsageModel
@@ -44,6 +43,11 @@ def authResponse(data, initial_bill):
         connected = True
         controller.update_server_status(True)
         controller.update_bill(initial_bill)
+        socket.emit("check_grid_status", callback=receive_grid_status)
+
+@socket.on("responseEvent")
+def receive_grid_status(is_errored):
+    controller.update_grid_status(not is_errored)
 
 @socket.event
 def connection_error(data):
@@ -59,22 +63,25 @@ def disconnect():
     print("Disconnected from client")
     controller.update_server_status(False)
     connected = False
-
-@socket.event
-def Hello(data):
-    global current_usage, bill
-    print("Hello message received: " + data)
+    controller.update_grid_status(False)
 
 def start_generating_usage():
     # triggers 'handle_generated_usage' every interval in 'start_generating_usage()'
     usage_generator.start_generating_usage(handle_generated_usage)
 
-def handle_generated_usage(usage):
-    global id, controller
-    reading_to_send = controller.create_reading(usage)
+def handle_generated_usage(interval, new_usage):
+    global id, controller, connected
+    reading_to_send = controller.create_reading()
+    controller.update_usage_display(interval, new_usage)
     if connected:
-        data = json_converter.convert_to_json(id, reading_to_send)
-        print(f"Sending Reading: {reading_to_send.get_usage()} kWh")
+        # a Python dictionary automatically converts into a JSON object
+        # which is sent to the server so no need for a JSON formatter
+        data = {
+            "id": id,
+            "time": reading_to_send.get_time(),
+            "usage": reading_to_send.get_usage()
+        }
+        print(f"Sending Reading: {reading_to_send.get_usage()} kW")
         socket.emit('reading', data)
     
 
@@ -83,12 +90,11 @@ def updateBill(data):
     controller.update_bill(data)
 
 @socket.event
-def warning(data):
+def warning(message):
     global controller
     # DISPLAY WARNING MESSAGE TO CLIENT
-    print("Warning received from server:")
-    print(data)
-    controller.update_grid_status(False)
+    print("Warning received from server: " + message)
+    controller.update_grid_status(False, message)
     
 @socket.event
 def resolved():
@@ -107,6 +113,7 @@ def connect_to_server():
 
 def start_connection_thread():
     connection_thread = threading.Thread(target=connect_to_server)
+    connection_thread.daemon = True # allows the thread to exit when the main program does
     connection_thread.start()
 
 def start_usage_generator_thread(): 

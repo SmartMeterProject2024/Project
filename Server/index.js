@@ -76,6 +76,12 @@ server.on("connection", (socket) => {
             console.log(`Could not find client associated with socket ${socket.id}`)
         }
     })
+
+    socket.on("check_grid_status", (callback) => {
+        socket.emit("grid_status", (response) => {
+            callback(response)
+        })
+    })
 });
 
 async function getBillTotal(id) {
