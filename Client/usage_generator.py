@@ -18,9 +18,9 @@ def wait_for_next_interval(callback=None): # Sends interval to be printed
     time.sleep(interval)
 
 def generate_usage():
-  num = random.randint(0, 250) # inclusive
+  num = random.randint(0, 2500) # inclusive
   # 1 decimal place
-  usage = (num if num == 0 else num / 10)
+  usage = (num if num == 0 else num / 100)
   return usage
 
 if __name__ == '__main__':
