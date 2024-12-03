@@ -31,8 +31,12 @@ class UsageController:
         new_reading = Reading(current_time, converted_usage)
         return new_reading
     
-    def update_bill(self, newTotalBill):
-        self.model.set_bill(newTotalBill)
+    def update_bill(self, new_total_bill):
+        self.model.set_bill(new_total_bill)
+        self.update_view()
+
+    def update_total_usage(self, new_total_usage):
+        self.model.set_total_usage(new_total_usage)
         self.update_view()
 
     def update_view(self):

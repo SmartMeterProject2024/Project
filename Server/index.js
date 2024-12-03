@@ -33,6 +33,7 @@ server.on("connection", (socket) => {
         authenticated = await getAuth(data.id, data.token)
         //console.log(`authentication result ${authenticated}`)
         billTotal = 0
+        totalUsage = 0
         console.log(`Fetching readings for user ${data.id}`)
         billTotal = await getBillTotal(data.id)
         //console.log(`BILLTOTAL----------${billTotal}`)
@@ -45,7 +46,7 @@ server.on("connection", (socket) => {
         } else {
             socket.disconnect()
         }
-        callback(authenticated, billTotal)
+        callback(authenticated, billTotal, totalUsage)
     })
 
     socket.on("reading", (data) => {
