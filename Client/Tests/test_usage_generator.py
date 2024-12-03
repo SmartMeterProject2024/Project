@@ -5,8 +5,8 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from usage_generator import wait_for_next_interval
-from usage_generator import generate_usage
+from generator.usage_generator import wait_for_next_interval
+from generator.usage_generator import generate_usage
 
 class TestClient(unittest.TestCase):
 

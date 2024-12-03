@@ -1,7 +1,8 @@
 import threading
 import time
 import socketio
-import usage_generator
+from generator.usage_generator import UsageGenerator
+
 from mvc.usage_controller import UsageController
 from mvc.usage_model import UsageModel
 from mvc.usage_view import UsageView
@@ -65,10 +66,6 @@ def disconnect():
     connected = False
     controller.update_grid_status(False)
 
-def start_generating_usage():
-    # triggers 'handle_generated_usage' every interval in 'start_generating_usage()'
-    usage_generator.start_generating_usage(handle_generated_usage)
-
 def handle_generated_usage(interval, new_usage):
     global id, controller, connected
     controller.update_usage_stats(interval, new_usage)
@@ -117,16 +114,18 @@ def start_connection_thread():
     connection_thread.daemon = True # allows the thread to exit when the main program does
     connection_thread.start()
 
-def start_usage_generator_thread(): 
-    usage_thread = threading.Thread(target=start_generating_usage)
+def start_usage_generator_thread(generator): 
+    usage_thread = threading.Thread(target=generator.start_generating_usage)
     usage_thread.daemon = True # allows the thread to exit when the main program does
     usage_thread.start()
 
 if __name__ == "__main__":
     global model, view, controller
+    usage_generator = UsageGenerator()
     model = UsageModel(usage_generator.generate_usage(), 0.0, 0.00) # to update total and bill from mock
     view = UsageView()
-    controller = UsageController(model, view)
-    start_usage_generator_thread()
+    controller = UsageController(model, view, handle_generated_usage)
+    usage_generator.attach(controller)
+    start_usage_generator_thread(usage_generator)
     start_connection_thread()
     view.run()
