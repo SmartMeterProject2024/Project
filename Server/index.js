@@ -19,10 +19,9 @@ function checkAuth(id) {
     for (conn in connections) {
         if (conn == id) {
             return true
-        } else {
-            return false
         }
     }
+    return false
 }
 
 server.on("connection", (socket) => {
@@ -218,3 +217,11 @@ gridSocket.on("issue_resolved", () => {
     console.log("Grid issue resolved")
     server.emit("resolved")
 })
+
+function closeGridSocket() {
+    if (gridSocket) {
+        gridSocket.disconnect();
+    }
+}
+
+module.exports = { checkAuth, connections, closeGridSocket}
