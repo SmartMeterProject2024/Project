@@ -224,4 +224,4 @@ function closeGridSocket() {
     }
 }
 
-module.exports = { checkAuth, connections, closeGridSocket}
+module.exports = { checkAuth, connections, server, closeGridSocket}
