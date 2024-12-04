@@ -58,7 +58,7 @@ class UsageView:
             bootstyle="success",
             amounttotal=25,  # Max capacity
         )
-        self.meter.grid(row=1, column=0, columnspan=3, pady=(10, 0))
+        self.meter.grid(row=1, column=0, columnspan=3, pady=(30, 0))
 
 
         # Total usage label

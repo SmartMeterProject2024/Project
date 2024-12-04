@@ -1,14 +1,19 @@
 # MVC - Controller
 from datetime import datetime
+from generator.observer import Observer
 from reading import Reading
 
 
-class UsageController:
-    def __init__(self, model, view):
+class UsageController(Observer):
+    def __init__(self, model, view, event_handler):
         self.model = model
         self.view = view
+        self.event_handler = event_handler
         self.update_view()
         self.last_total_usage = model.get_total_usage()
+
+    def update(self, interval, usage):
+        self.event_handler(interval, usage)
 
     def update_usage_display(self):
         self.update_view()
