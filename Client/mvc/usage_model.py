@@ -1,10 +1,5 @@
 # MVC - Model
 class UsageModel:
-    def __init__(self):
-      self.current_usage = 0
-      self.total_usage = 0
-      self.bill = 0.00
-
     def __init__(self, current_usage, total_usage, bill):
       self.current_usage = current_usage
       self.total_usage = total_usage
