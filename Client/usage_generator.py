@@ -7,9 +7,12 @@ def handle_print_interval(interval): # Won't be triggered during tests
 def start_generating_usage(callback):
   global interval
   while True:
-    wait_for_next_interval(handle_print_interval)
-    new_usage = generate_usage()
-    callback(interval, new_usage)
+    try:
+      wait_for_next_interval(handle_print_interval)
+      new_usage = generate_usage()
+      callback(interval, new_usage)
+    except Exception as e:
+      print(f"Failed to generate electricity usage: {e}")
 
 def wait_for_next_interval(callback=None): # Sends interval to be printed
     global interval
