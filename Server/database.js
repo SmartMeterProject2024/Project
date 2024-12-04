@@ -21,16 +21,21 @@ app.post(`/authenticate/`, (req, res) => {
 app.get(`/readings/:id`, (req, res) => {
     // Mocks a database fetching existing readings for a given user
     console.log(`request received on /readings for id ${req.params.id}`)
-    readings = []
-    for (x = 1; x <Math.floor(Math.random() * 10) + 1; x++) {
-        reading = {
-            "id": req.params.id,
-            "time": "randomTime",
-            "cost": (Math.floor(Math.random() * 150) / 100)
+    try {
+        readings = []
+        for (x = 1; x <Math.floor(Math.random() * 10) + 1; x++) {
+            reading = {
+                "id": req.params.id,
+                "time": "randomTime",
+                "cost": (Math.floor(Math.random() * 150) / 100)
+            }
+            readings.push(reading)
         }
-        readings.push(reading)
-    }
 
-    console.log(readings)
-    res.json(readings)
+        console.log(readings)
+        res.json(readings)
+    }
+    catch(error) {
+        console.error(`Failed to fetch readings: ${error}`)
+    }
 })

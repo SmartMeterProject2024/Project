@@ -69,19 +69,24 @@ def disconnect():
 
 def handle_generated_usage(interval, new_usage):
     global id, controller, connected
-    controller.update_usage_stats(interval, new_usage)
-    reading_to_send = controller.create_reading()
-    controller.update_usage_display()
-    if connected:
-        # a Python dictionary automatically converts into a JSON object
-        # which is sent to the server so no need for a JSON formatter
-        data = {
-            "id": id,
-            "time": reading_to_send.get_time(),
-            "usage": reading_to_send.get_usage()
-        }
-        print(f"Sending Reading: {reading_to_send.get_usage()} kWh")
-        socket.emit('reading', data)
+    try:
+        controller.update_usage_stats(interval, new_usage)
+        reading_to_send = controller.create_reading()
+        controller.update_usage_display()
+        if connected:
+            # a Python dictionary automatically converts into a JSON object
+            # which is sent to the server so no need for a JSON formatter
+            data = {
+                "id": id,
+                "time": reading_to_send.get_time(),
+                "usage": reading_to_send.get_usage()
+            }
+            print(f"Sending Reading: {reading_to_send.get_usage()} kWh")
+            socket.emit('reading', data)
+    except RuntimeError as e:
+        print(f"Couldn't create Reading: {e}")
+    except Exception as ex:
+        print(f"Something went wrong: {ex}")
     
 
 @socket.event
@@ -111,22 +116,31 @@ def connect_to_server():
         connect_to_server()
 
 def start_connection_thread():
-    connection_thread = threading.Thread(target=connect_to_server)
-    connection_thread.daemon = True # allows the thread to exit when the main program does
-    connection_thread.start()
+    try:
+        connection_thread = threading.Thread(target=connect_to_server)
+        connection_thread.daemon = True # allows the thread to exit when the main program does
+        connection_thread.start()
+    except Exception as e:
+        print(f"Failed to start connection thread: {e}")
 
 def start_usage_generator_thread(generator): 
-    usage_thread = threading.Thread(target=generator.start_generating_usage)
-    usage_thread.daemon = True # allows the thread to exit when the main program does
-    usage_thread.start()
+    try:
+        usage_thread = threading.Thread(target=generator.start_generating_usage)
+        usage_thread.daemon = True # allows the thread to exit when the main program does
+        usage_thread.start()
+    except Exception as e:
+        print(f"Failed to start usage generator thread: {e}")
 
 if __name__ == "__main__":
     global model, view, controller
-    usage_generator = UsageGenerator()
-    model = UsageModel(usage_generator.generate_usage(), 0.0, 0.00) # to update total and bill from mock
-    view = UsageView()
-    controller = UsageController(model, view, handle_generated_usage)
-    usage_generator.attach(controller)
-    start_usage_generator_thread(usage_generator)
-    start_connection_thread()
-    view.run()
+    try:
+        usage_generator = UsageGenerator()
+        model = UsageModel(usage_generator.generate_usage(), 0.0, 0.00) # to update total and bill from mock
+        view = UsageView()
+        controller = UsageController(model, view, handle_generated_usage)
+        usage_generator.attach(controller)
+        start_usage_generator_thread(usage_generator)
+        start_connection_thread()
+        view.run()
+    except Exception as e:
+        print(f"Failed to start client: {e}")

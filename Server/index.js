@@ -19,34 +19,37 @@ function checkAuth(id) {
     for (conn in connections) {
         if (conn == id) {
             return true
-        } else {
-            return false
         }
     }
+    return false
 }
 
 server.on("connection", (socket) => {
     console.log(`Connection established (ID: ${socket.id})`)
 
     socket.on("authenticate", async (data, callback) => {
-        // AUTHENTICATE ID AND TOKEN WITH DATABASE
-        authenticated = await getAuth(data.id, data.token)
-        //console.log(`authentication result ${authenticated}`)
-        billTotal = 0
-        totalUsage = 0
-        console.log(`Fetching readings for user ${data.id}`)
-        billTotal = await getBillTotal(data.id)
-        //console.log(`BILLTOTAL----------${billTotal}`)
-        if (authenticated) {
-            connections[data.id] = {
-                "bill": billTotal,
-                "socket": socket.id
+        try {
+            // AUTHENTICATE ID AND TOKEN WITH DATABASE
+            authenticated = await getAuth(data.id, data.token)
+            //console.log(`authentication result ${authenticated}`)
+            billTotal = 0
+            totalUsage = 0
+            console.log(`Fetching readings for user ${data.id}`)
+            billTotal = await getBillTotal(data.id)
+            //console.log(`BILLTOTAL----------${billTotal}`)
+            if (authenticated) {
+                connections[data.id] = {
+                    "bill": billTotal,
+                    "socket": socket.id
+                }
+                console.log(`Socket ${socket.id} authenticated with ID ${data.id}. Existing bill of ${billTotal}`)
+            } else {
+                socket.disconnect()
             }
-            console.log(`Socket ${socket.id} authenticated with ID ${data.id}. Existing bill of ${billTotal}`)
-        } else {
-            socket.disconnect()
+            callback(authenticated, billTotal, totalUsage)
+        } catch(error) {
+            console.error(`Authentication error: ${error}`)
         }
-        callback(authenticated, billTotal, totalUsage)
     })
 
     socket.on("reading", (data) => {
@@ -69,7 +72,7 @@ server.on("connection", (socket) => {
             console.log(`Reading from ${data.id}: ${data.usage} (£${data.usage * energyCost}, £${connections[data.id].bill})`)
             socket.emit("updateBill", connections[data.id].bill)
         } catch (error) {
-            console.log(error.message)
+            console.error(error.message)
         }
     })
     
@@ -219,3 +222,11 @@ gridSocket.on("issue_resolved", () => {
     console.log("Grid issue resolved")
     server.emit("resolved")
 })
+
+function closeGridSocket() {
+    if (gridSocket) {
+        gridSocket.disconnect();
+    }
+}
+
+module.exports = { checkAuth, connections, server, closeGridSocket}
