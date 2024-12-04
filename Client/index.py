@@ -33,7 +33,7 @@ def connect():
 
 
 @socket.on("responseEvent")
-def authResponse(data, initial_bill):
+def authResponse(data, initial_bill, initial_total_usage):
     global connected
     if data == False: 
         print("Authentication unsuccessful")
@@ -44,6 +44,7 @@ def authResponse(data, initial_bill):
         connected = True
         controller.update_server_status(True)
         controller.update_bill(initial_bill)
+        controller.update_total_usage(initial_total_usage)
         socket.emit("check_grid_status", callback=receive_grid_status)
 
 @socket.on("responseEvent")
