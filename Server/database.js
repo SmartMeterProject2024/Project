@@ -4,7 +4,7 @@ const port = 3002
 
 app.use(express.json())
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Listening on port ${port}`)
 })
 
@@ -37,5 +37,8 @@ app.get(`/readings/:id`, (req, res) => {
     }
     catch(error) {
         console.error(`Failed to fetch readings: ${error}`)
+        res.status(500).send('Internal Server Error');
     }
 })
+
+module.exports = { app, server };
