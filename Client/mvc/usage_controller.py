@@ -2,8 +2,9 @@
 from datetime import datetime
 from reading import Reading
 
-
+# Following MVC model, this class controls business logic behind the reading objects.
 class UsageController:
+    # Constructor for UsageController object
     def __init__(self, model, view):
         self.model = model
         self.view = view
@@ -24,6 +25,8 @@ class UsageController:
         self.model.set_total_usage(new_total_usage)
         print("total usage after: " + str(self.model.get_total_usage()) + " kWh")
 
+    # Generates a usage reading from current time, current energy draw (sourced in Model)
+    #  and updates view with new details
     def create_reading(self):
         current_time = datetime.now().isoformat()
         converted_usage = self.model.get_total_usage() - self.last_total_usage
@@ -31,18 +34,21 @@ class UsageController:
         new_reading = Reading(current_time, converted_usage)
         return new_reading
     
+    # Sets new bill value, ready to send to the view
     def update_bill(self, newTotalBill):
         self.model.set_bill(newTotalBill)
         self.update_view()
 
+    # Displays up to date usage and bill values in the view
     def update_view(self):
         current_usage = self.model.get_current_usage()
         total_usage = self.model.get_total_usage()
         bill = self.model.get_bill()
         self.view.update_ui(current_usage, total_usage, bill)
 
+    # Sends updated connection status to view
     def update_server_status(self, connected):
         self.view.update_server_connection(connected)
-
+    
     def update_grid_status(self, connected, message=""):
         self.view.update_grid_connection(connected, "Issue with grid detected - " + message)

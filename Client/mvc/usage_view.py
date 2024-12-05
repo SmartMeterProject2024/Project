@@ -1,10 +1,9 @@
 # MVC - View (using TKinter)
 import sys
-import tkinter as tk
+from tkinter import messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.widgets import Meter
 from datetime import datetime
-from tkinter import messagebox
 import logging
 
 
@@ -14,7 +13,13 @@ class UsageView:
     font_small = ("Verdana", 10, "normal")
     font_bold = ("Verdana", 16, "bold")
     font_heading = ("Verdana", 20, "bold")
+    # Fonts
+    font_reg = ("Verdana", 14, "normal")
+    font_small = ("Verdana", 10, "normal")
+    font_bold = ("Verdana", 16, "bold")
+    font_heading = ("Verdana", 20, "bold")
 
+    # Constructor for UsageView class
     def __init__(self):
         self.current_usage = 0  # Used for smooth updating of total usage
         self.target_usage = 0  # Tracks the new usage for each interval
@@ -108,10 +113,19 @@ class UsageView:
         # Separate error message labels for connection and grid issues
         self.lblConnectionError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
         self.lblConnectionError.grid(row=2, column=0, columnspan=3, pady=(5, 0))
+        # Separate error message labels for connection and grid issues
+        self.lblConnectionError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
+        self.lblConnectionError.grid(row=2, column=0, columnspan=3, pady=(5, 0))
 
         self.lblGridError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
         self.lblGridError.grid(row=3, column=0, columnspan=3, pady=(5, 0))
+        self.lblGridError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
+        self.lblGridError.grid(row=3, column=0, columnspan=3, pady=(5, 0))
 
+        # Configure grid to expand
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(1, weight=1)
+        self.root.grid_columnconfigure(2, weight=1)
         # Configure grid to expand
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_columnconfigure(1, weight=1)
@@ -120,6 +134,13 @@ class UsageView:
         # Start updating the time only after the widgets are initialized
         self.update_time()
 
+    # Function to smoothly update the gauge towards the target usage level
+    def smooth_update(self):
+        # Smoothly approach the target usage
+        if self.current_usage < self.target_usage:
+            self.current_usage += 3 if (self.target_usage - self.current_usage > 10) else 1 if (self.target_usage - self.current_usage > 1) else (self.target_usage - self.current_usage)  # Increment to increase
+        elif self.current_usage > self.target_usage:
+            self.current_usage -= 3 if (self.current_usage - self.target_usage > 10) else 1 if (self.current_usage - self.target_usage > 1) else (self.current_usage - self.target_usage)  # Decrement to decrease
     # Function to smoothly update the gauge towards the target usage level
     def smooth_update(self):
         # Smoothly approach the target usage
@@ -142,6 +163,9 @@ class UsageView:
         else:
             self.meter.configure(bootstyle="danger")
 
+        # Continue updating until reaching the target
+        if self.current_usage != self.target_usage:
+            self.root.after(25, self.smooth_update())  # Recursive call
         # Continue updating until reaching the target
         if self.current_usage != self.target_usage:
             self.root.after(25, self.smooth_update())  # Recursive call
@@ -204,11 +228,13 @@ class UsageView:
         print("Shutdown")
         sys.exit()
 
-    def run(self):
-        self.root.mainloop()
+# Start the program
+def run(self):
+    self.root.mainloop()
 
 
 # To run the UI
 if __name__ == "__main__":
     app = UsageView()
     app.run()
+
