@@ -1,10 +1,9 @@
 # MVC - View (using TKinter)
 import sys
-import tkinter as tk
+from tkinter import messagebox
 import ttkbootstrap as ttk
 from ttkbootstrap.widgets import Meter
 from datetime import datetime
-from tkinter import messagebox
 import logging
 
 
@@ -14,7 +13,13 @@ class UsageView:
     font_small = ("Verdana", 10, "normal")
     font_bold = ("Verdana", 16, "bold")
     font_heading = ("Verdana", 20, "bold")
+    # Fonts
+    font_reg = ("Verdana", 14, "normal")
+    font_small = ("Verdana", 10, "normal")
+    font_bold = ("Verdana", 16, "bold")
+    font_heading = ("Verdana", 20, "bold")
 
+    # Constructor for UsageView class
     def __init__(self):
         self.current_usage = 0  # Used for smooth updating of total usage
         self.target_usage = 0  # Tracks the new usage for each interval
@@ -29,96 +34,98 @@ class UsageView:
     )
 
     def launch_ui(self):
-        # Create the main window with ttkbootstrap
-        self.root = ttk.Window(themename="darkly")
-        self.root.title("Smart Meter UI")
-        self.root.geometry("900x600")
-        self.root.minsize(900, 600)
+        try:
+            # Create the main window with ttkbootstrap
+            self.root = ttk.Window(themename="darkly")
+            self.root.title("Smart Meter UI")
+            self.root.geometry("900x600")
+            self.root.minsize(900, 600)
 
-        style = ttk.Style()
-        style.configure("success.TLabel", foreground="green", font=UsageView.font_bold)
-        style.configure("danger.TLabel", foreground="red", font=UsageView.font_bold)
+            style = ttk.Style()
+            style.configure("success.TLabel", foreground="green", font=UsageView.font_bold)
+            style.configure("danger.TLabel", foreground="red", font=UsageView.font_bold)
 
-        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+            self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        # Heading label
-        lblHeading = ttk.Label(
-            self.root, text="Smart Meter", font=UsageView.font_heading, anchor="center"
-        )
-        lblHeading.grid(row=0, column=0, columnspan=3, pady=(10, 0))
+            # Heading label
+            lblHeading = ttk.Label(
+                self.root, text="Smart Meter", font=UsageView.font_heading, anchor="center"
+            )
+            lblHeading.grid(row=0, column=0, columnspan=3, pady=(10, 0))
 
-        # Create and place the Meter (gauge) widget
-        self.meter = Meter(
-            self.root,
-            metersize=180,
-            amountused=self.current_usage,
-            metertype="semi",
-            subtext="Current Usage (kWh)",
-            interactive=False,
-            bootstyle="success",
-            amounttotal=25,  # Max capacity
-        )
-        self.meter.grid(row=1, column=0, columnspan=3, pady=(10, 0))
+            # Create and place the Meter (gauge) widget
+            self.meter = Meter(
+                self.root,
+                metersize=180,
+                amountused=self.current_usage,
+                metertype="semi",
+                subtext="Current Usage (kWh)",
+                interactive=False,
+                bootstyle="success",
+                amounttotal=25,  # Max capacity
+            )
+            self.meter.grid(row=1, column=0, columnspan=3, pady=(30, 0))
 
+            # Total usage label
+            lblTotalUsage = ttk.Label(self.root, text="Total Usage", font=UsageView.font_bold)
+            lblTotalUsage.grid(row=6, column=0)
+            self.lblTotalUsageVal = ttk.Label(
+                self.root, text=f"{format(0.00, '.2f')} kWh", font=UsageView.font_reg
+            )
+            self.lblTotalUsageVal.grid(row=7, column=0)
 
-        # Total usage label
-        lblTotalUsage = ttk.Label(self.root, text="Total Usage", font=UsageView.font_bold)
-        lblTotalUsage.grid(row=6, column=0)
-        self.lblTotalUsageVal = ttk.Label(
-            self.root, text=f"{format(0.00, '.2f')} kWh", font=UsageView.font_reg
-        )
-        self.lblTotalUsageVal.grid(row=7, column=0)
+            # Bill label
+            lblBill = ttk.Label(self.root, text="Bill", font=UsageView.font_bold)
+            lblBill.grid(row=6, column=2)
+            self.lblBillVal = ttk.Label(self.root, text="N/A", font=UsageView.font_reg)
+            self.lblBillVal.grid(row=7, column=2)
 
-        # Bill label
-        lblBill = ttk.Label(self.root, text="Bill", font=UsageView.font_bold)
-        lblBill.grid(row=6, column=2)
-        self.lblBillVal = ttk.Label(self.root, text="N/A", font=UsageView.font_reg)
-        self.lblBillVal.grid(row=7, column=2)
+            # Date label in the top-left
+            self.lblDate = ttk.Label(
+                self.root, text=datetime.now().strftime("%Y-%m-%d"), font=UsageView.font_bold
+            )
+            self.lblDate.grid(row=0, column=0, sticky="w", padx=10)
 
-        # Date label in the top-left
-        self.lblDate = ttk.Label(
-            self.root, text=datetime.now().strftime("%Y-%m-%d"), font=UsageView.font_bold
-        )
-        self.lblDate.grid(row=0, column=0, sticky="w", padx=10)
+            # Time label in the top-right
+            self.lblTime = ttk.Label(
+                self.root, text=datetime.now().strftime("%H:%M"), font=UsageView.font_bold
+            )
+            self.lblTime.grid(row=0, column=2, sticky="e", padx=10)
 
-        # Time label in the top-right
-        self.lblTime = ttk.Label(
-            self.root, text=datetime.now().strftime("%H:%M"), font=UsageView.font_bold
-        )
-        self.lblTime.grid(row=0, column=2, sticky="e", padx=10)
+            # Server connection status icon and label
+            self.signal_frame = ttk.Frame(self.root)
+            self.signal_frame.grid(row=9, column=2, sticky="e", pady=10, padx=10)
+            self.signal_icon = ttk.Label(
+                self.signal_frame, text="📶", font=UsageView.font_bold, cursor="hand2"
+            )
+            self.signal_icon.pack(side="left")
+            self.signal_icon.bind("<Button-1>", lambda e: self.show_connection_status())
 
-        # Server connection status icon and label
-        self.signal_frame = ttk.Frame(self.root)
-        self.signal_frame.grid(row=9, column=2, sticky="e", pady=10, padx=10)
-        self.signal_icon = ttk.Label(
-            self.signal_frame, text="📶", font=UsageView.font_bold, cursor="hand2"
-        )
-        self.signal_icon.pack(side="left")
-        self.signal_icon.bind("<Button-1>", lambda e: self.show_connection_status())
+            # Grid status icon and label
+            self.alert_frame = ttk.Frame(self.root)
+            self.alert_frame.grid(row=9, column=0, sticky="w", pady=10, padx=10)
+            self.alert_icon = ttk.Label(
+                self.alert_frame, text="🏭", font=UsageView.font_bold, cursor="hand2"
+            )
+            self.alert_icon.pack(side="left")
+            self.alert_icon.bind("<Button-1>", lambda e: self.show_grid_status())
 
-        # Grid status icon and label
-        self.alert_frame = ttk.Frame(self.root)
-        self.alert_frame.grid(row=9, column=0, sticky="w", pady=10, padx=10)
-        self.alert_icon = ttk.Label(
-            self.alert_frame, text="🏭", font=UsageView.font_bold, cursor="hand2"
-        )
-        self.alert_icon.pack(side="left")
-        self.alert_icon.bind("<Button-1>", lambda e: self.show_grid_status())
+            # Separate error message labels for connection and grid issues
+            self.lblConnectionError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
+            self.lblConnectionError.grid(row=2, column=0, columnspan=3, pady=(5, 0))
 
-        # Separate error message labels for connection and grid issues
-        self.lblConnectionError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
-        self.lblConnectionError.grid(row=2, column=0, columnspan=3, pady=(5, 0))
+            self.lblGridError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
+            self.lblGridError.grid(row=3, column=0, columnspan=3, pady=(5, 0))
 
-        self.lblGridError = ttk.Label(self.root, text="", font=UsageView.font_small, bootstyle="danger")
-        self.lblGridError.grid(row=3, column=0, columnspan=3, pady=(5, 0))
+            # Configure grid to expand
+            self.root.grid_columnconfigure(0, weight=1)
+            self.root.grid_columnconfigure(1, weight=1)
+            self.root.grid_columnconfigure(2, weight=1)
 
-        # Configure grid to expand
-        self.root.grid_columnconfigure(0, weight=1)
-        self.root.grid_columnconfigure(1, weight=1)
-        self.root.grid_columnconfigure(2, weight=1)
-
-        # Start updating the time only after the widgets are initialized
-        self.update_time()
+            # Start updating the time only after the widgets are initialized
+            self.update_time()
+        except Exception as e:
+            print(f"Failed to launch UI: {e}")
 
     # Function to smoothly update the gauge towards the target usage level
     def smooth_update(self):
@@ -145,7 +152,11 @@ class UsageView:
         # Continue updating until reaching the target
         if self.current_usage != self.target_usage:
             self.root.after(25, self.smooth_update())  # Recursive call
+        # Continue updating until reaching the target
+        if self.current_usage != self.target_usage:
+            self.root.after(25, self.smooth_update())  # Recursive call
 
+    # called by controller
     def update_ui(self, new_current_usage, new_total_usage, new_bill):
         self.update_gauge(new_current_usage)
         self.update_total_usage(new_total_usage)
@@ -156,17 +167,19 @@ class UsageView:
         self.target_usage = new_usage  # Set target
         self.smooth_update()  # Begin smooth transition
 
+    # updates the bill displaying currency format
     def update_bill(self, new_bill):
         self.lblBillVal.config(text=f"£{format(new_bill, '.2f')}")
 
+    # updates the total usage displaying kWh format
     def update_total_usage(self, new_total_usage):
         self.lblTotalUsageVal.config(text=f"{format(new_total_usage, '.2f')} kWh")
 
+    # updates the current time live
     def update_time(self):
         self.lblTime.config(text=datetime.now().strftime("%H:%M"))
         self.lblDate.config(text=datetime.now().strftime("%Y-%m-%d"))
         self.lblTime.after(5000, self.update_time)
-
 
     # Function to update connectivity status of server
     def update_server_connection(self, is_connected):
@@ -181,6 +194,7 @@ class UsageView:
             self.signal_icon.config(style="danger.TLabel")
             self.update_grid_connection(False)
 
+    # Function to update connectivity status of grid
     def update_grid_connection(self, is_connected, message=""):
         if is_connected:
             self.grid_status = "no_issue"
@@ -192,18 +206,22 @@ class UsageView:
             logging.error("Electricity grid issue detected")  # Log grid issue
             self.alert_icon.config(style="danger.TLabel")
 
+    # triggered when clicking connection icon
     def show_connection_status(self):
         status_message = "Connection strong" if self.connection_status == "strong" else "Connection lost"
         messagebox.showinfo("Connection Status", status_message)
 
+    # triggered when clicking grid icon
     def show_grid_status(self):
         grid_message = "Electricity grid is stable" if self.grid_status == "no_issue" else "Electricity grid issue detected"
         messagebox.showinfo("Grid Status", grid_message)
 
+    # closes client when ui is closed
     def on_closing(self):
         print("Shutdown")
         sys.exit()
 
+    # Start the program
     def run(self):
         self.root.mainloop()
 
@@ -212,3 +230,4 @@ class UsageView:
 if __name__ == "__main__":
     app = UsageView()
     app.run()
+

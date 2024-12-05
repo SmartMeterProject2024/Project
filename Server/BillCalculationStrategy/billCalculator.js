@@ -1,13 +1,13 @@
 const BillByHistoricStrategy = require("./billCalculateByHistoric");
 const BillByNewReadingStrategy = require("./billCalculateByNewReading");
 
-// Context
+// Strategy Pattern - Context
 class BillCalculator {
   constructor(strategy) {
     this.strategy = strategy;
   }
 
-  setStrategy(strategy) {
+  setStrategy(strategy) { // choose between Historic data or On New Reading
     this.strategy = strategy;
   }
 

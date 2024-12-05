@@ -3,3 +3,5 @@ Client/__pycache__/*
 Client/Tests/__pycache__/*
 error_log.txt
 Client/mvc/__pycache__/*
+Client/generator/__pycache__/*
+.vscode/settings.json
