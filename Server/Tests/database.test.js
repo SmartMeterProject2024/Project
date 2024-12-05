@@ -28,7 +28,7 @@ describe('GET readings', () => {
         expect(response.body).toBeInstanceOf(Array);
         response.body.forEach(reading => {
             expect(reading).toHaveProperty('id', '123');
-            expect(reading).toHaveProperty('time', 'randomTime');
+            expect(reading).toHaveProperty('time', 'r/a/n do:mT:im.e');
             expect(reading).toHaveProperty('cost');
             expect(typeof reading.cost).toBe('number');
         });
