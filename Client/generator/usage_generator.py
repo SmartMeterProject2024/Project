@@ -27,7 +27,7 @@ class UsageGenerator(Subject):
 
     # Create a reading of a random value between 0.1 and 2 kw
     def generate_usage(self):
-        num = random.randint(0, 20) # inclusive
+        num = random.randint(0, 200) # inclusive
         # to 2 decimal places
         usage = (num if num == 0 else num / 100)
         return float(usage)

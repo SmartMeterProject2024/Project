@@ -57,12 +57,12 @@ class UsageView:
             self.meter = Meter(
                 self.root,
                 metersize=180,
-                amountused=self.current_usage,
+                amountused=self.current_usage * 1000,
                 metertype="semi",
-                subtext="Current Usage (kWh)",
+                subtext="Current Usage (W)",
                 interactive=False,
                 bootstyle="success",
-                amounttotal=25,  # Max capacity
+                amounttotal=2000,  # Max capacity
             )
             self.meter.grid(row=1, column=0, columnspan=3, pady=(30, 0))
 
@@ -136,10 +136,9 @@ class UsageView:
             self.current_usage -= 3 if (self.current_usage - self.target_usage > 10) else 1 if (self.current_usage - self.target_usage > 1) else (self.current_usage - self.target_usage)  # Decrement to decrease
 
         # Update the meter display and labels
-        self.meter.configure(
-            amountused=format(self.current_usage, ".2f"), subtext="Current Usage (kW)"
+        self.meter.configure( # converting to Watts because ttkbootstrap.widgets doesn't support realistic small kW values < 1
+            amountused=int(self.current_usage * 1000), subtext="Current Usage (W)"
         )
-        
 
         # Change color based on usage level
         if self.current_usage < 10:
