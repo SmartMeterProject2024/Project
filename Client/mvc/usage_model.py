@@ -1,15 +1,10 @@
 # MVC - Model
 class UsageModel:
-    def __init__(self):
-        self.current_usage = 0
-        self.total_usage = 0
-        self.bill = 0.00
-        
-    # Constructor for UsageModel class
     def __init__(self, current_usage, total_usage, bill):
-        self.current_usage = current_usage
-        self.total_usage = total_usage
-        self.bill = bill
+      # initial values for usage model
+      self.current_usage = current_usage
+      self.total_usage = total_usage
+      self.bill = bill
 
     # Setter for current_usage
     def set_current_usage(self, data):

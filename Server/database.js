@@ -8,7 +8,7 @@ const port = 3002
 app.use(express.json())
 
 // Listen on given port for connections
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Listening on port ${port}`)
 })
 
@@ -27,20 +27,28 @@ app.post(`/authenticate/`, (req, res) => {
 // Mock fetching stored readings associated with a user
 app.get(`/readings/:id`, (req, res) => {
     console.log(`request received on /readings for id ${req.params.id}`)
-    readings = []
-    // Randomly generate readings
-    for (x = 1; x < Math.floor(Math.random() * 30) + 1; x++) {
+    try {
+        readings = []
+        // Randomly generate readings
+        for (x = 1; x < Math.floor(Math.random() * 30) + 1; x++) {
         cost = Math.floor(Math.random() * 80) / 100
-        reading = {
-            "id": req.params.id,
-            "time": "r/a/n do:mT:im.e",
-            "cost": cost,
+            reading = {
+                "id": req.params.id,
+                "time": "r/a/n do:mT:im.e",
+                "cost": cost,
             "usage": cost / 0.24
+            }
+            readings.push(reading)
         }
-        readings.push(reading)
-    }
 
     // Return set of readings to the client
-    console.log(readings)
-    res.json(readings)
+        console.log(readings)
+        res.json(readings)
+    }
+    catch(error) {
+        console.error(`Failed to fetch readings: ${error}`)
+        res.status(500).send('Internal Server Error');
+    }
 })
+
+module.exports = { app, server };

@@ -4,7 +4,8 @@ import time
 import socketio
 import random
 # Bring in code to generate realistic energy usage
-import usage_generator
+from generator.usage_generator import UsageGenerator
+
 # Bring in logic for MVC model
 from mvc.usage_controller import UsageController
 from mvc.usage_model import UsageModel
@@ -25,7 +26,7 @@ connected = False
 
 # Listen for connect event. Fires when a successful websocket connection is made
 @socket.event
-def connect():
+def connect(): # Triggered on new connection with Server
     global id
     print("Connected to server. (ID: " + socket.sid + ")")
     print("Attempting authentication with server...")
@@ -38,26 +39,25 @@ def connect():
 
 # Callback function for authentication
 @socket.on("responseEvent")
-def authResponse(data, initial_bill):
+def authResponse(data): # Triggered after authentication attempt
     global connected
     if data == False: 
         print("Authentication unsuccessful")
         connected = False
-        controller.update_server_status(False)
+        controller.update_server_status(False) # update server icon in view
     else: 
         print("Authenticated")
         connected = True
         controller.update_server_status(True)
-        controller.update_bill(initial_bill)
-        socket.emit("check_grid_status", callback=receive_grid_status)
+        socket.emit("check_grid_status", callback=receive_grid_status) # checks grid status
 
 @socket.on("responseEvent")
-def receive_grid_status(is_errored):
+def receive_grid_status(is_errored): # Triggered when grid status updates
     controller.update_grid_status(not is_errored)
 
 # Output to console when connection error occurs, retry connection
 @socket.event
-def connection_error(data):
+def connection_error(data): # Triggered when connection to server errors
     global connected
     print("Failed to connect to server.")
     print(data)
@@ -66,34 +66,35 @@ def connection_error(data):
 
 # Output to console when client disconnects from server. Attempt to reconnect.
 @socket.event
-def disconnect():
+def disconnect(): # Triggered when disconnected from Server
     global connected
     print("Disconnected from Server")
     controller.update_server_status(False)
     connected = False
     controller.update_grid_status(False)
 
-# Generate new usage readings on given update intervals
-def start_generating_usage():
-    # triggers 'handle_generated_usage' every interval in 'start_generating_usage()'
-    usage_generator.start_generating_usage(handle_generated_usage)
-
+# Called by controller when notified of a new reading
 # Given an energy usage, generate a reading, send to server, and log to console.
 def handle_generated_usage(interval, new_usage):
     global id, controller, connected
-    controller.update_usage_stats(interval, new_usage)
-    reading_to_send = controller.create_reading()
-    controller.update_usage_display()
-    if connected:
-        # a Python dictionary automatically converts into a JSON object
-        # which is sent to the server so no need for a JSON formatter
-        data = {
-            "id": id,
-            "time": reading_to_send.get_time(),
-            "usage": reading_to_send.get_usage()
-        }
-        print(f"Sending Reading: {reading_to_send.get_usage()} kWh")
-        socket.emit('reading', data)
+    try:
+        controller.update_usage_stats(interval, new_usage) # updates model
+        reading_to_send = controller.create_reading()
+        controller.update_usage_display() # updates view
+        if connected:
+            # a Python dictionary automatically converts into a JSON object
+            # which is sent to the server so no need for a JSON formatter
+            data = {
+                "id": id,
+                "time": reading_to_send.get_time(),
+                "usage": reading_to_send.get_usage()
+            }
+            print(f"Sending Reading: {reading_to_send.get_usage()} kWh")
+            socket.emit('reading', data) # send reading to server
+    except RuntimeError as e:
+        print(f"Couldn't create Reading: {e}")
+    except Exception as ex:
+        print(f"Something went wrong: {ex}")
     
 # Force display an updated bill from the server
 @socket.event
@@ -103,8 +104,8 @@ def updateBill(data):
 # Force displat an updated total usage from the server
 @socket.event
 def updateUsage(data):
-    # NEED TO IMPLEMENT
-    print("NEED TO IMPLEMENT")
+    controller.update_total_usage(data)
+    controller.update_view()
 
 # Take warning messages from server and display them
 @socket.event
@@ -133,21 +134,32 @@ def connect_to_server():
 
 # Start up a connection in a new thread so as not to interrupt the rest of the program
 def start_connection_thread():
-    connection_thread = threading.Thread(target=connect_to_server)
-    connection_thread.daemon = True # allows the thread to exit when the main program does
-    connection_thread.start()
+    try:
+        connection_thread = threading.Thread(target=connect_to_server)
+        connection_thread.daemon = True # allows the thread to exit when the main program does
+        connection_thread.start()
+    except Exception as e:
+        print(f"Failed to start connection thread: {e}")
 
-def start_usage_generator_thread(): 
-    usage_thread = threading.Thread(target=start_generating_usage)
-    usage_thread.daemon = True # allows the thread to exit when the main program does
-    usage_thread.start()
+def start_usage_generator_thread(generator): 
+    try:
+        usage_thread = threading.Thread(target=generator.start_generating_usage)
+        usage_thread.daemon = True # allows the thread to exit when the main program does
+        usage_thread.start()
+    except Exception as e:
+        print(f"Failed to start usage generator thread: {e}")
 
 # Start up a generator for energy readings in a new thread so as not to interrupt the rest of the program
 if __name__ == "__main__":
     global model, view, controller
-    model = UsageModel(usage_generator.generate_usage(), 0.0, 0.00) # to update total and bill from mock
-    view = UsageView()
-    controller = UsageController(model, view)
-    start_usage_generator_thread()
-    start_connection_thread()
-    view.run()
+    try:
+        usage_generator = UsageGenerator()
+        model = UsageModel(usage_generator.generate_usage(), 0.0, 0.00) # to update total and bill from mock
+        view = UsageView()
+        controller = UsageController(model, view, handle_generated_usage)
+        usage_generator.attach(controller)
+        start_usage_generator_thread(usage_generator)
+        start_connection_thread()
+        view.run()
+    except Exception as e:
+        print(f"Failed to start client: {e}")

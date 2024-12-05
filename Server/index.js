@@ -41,26 +41,30 @@ server.on("connection", (socket) => {
 
     // Handle authentication with the client
     socket.on("authenticate", async (data, callback) => {
-        // AUTHENTICATE ID AND TOKEN WITH DATABASE
-        authenticated = await getAuth(data.id, data.token)
+        try {
+            // AUTHENTICATE ID AND TOKEN WITH DATABASE
+            authenticated = await getAuth(data.id, data.token)
 
-        // Contact database, fetch existing readings and calculate total bill and total usage
-        console.log(`Fetching readings for user ${data.id}`);
-        results = await getReadingValues(data.id)
-        if (authenticated) {
-            connections[data.id] = {
-                "bill": results.billTotal,
-                "socket": socket.id
+            // Contact database, fetch existing readings and calculate total bill and total usage
+            console.log(`Fetching readings for user ${data.id}`);
+            results = await getReadingValues(data.id)
+            if (authenticated) {
+                connections[data.id] = {
+                    "bill": results.billTotal,
+                    "socket": socket.id
+                }
+                // Feed values to client
+                console.log(`Socket ${socket.id} authenticated with ID ${data.id}. Existing bill of £${formatPrice(results.billTotal)} (${results.usageTotal}kWh)`)
+                socket.emit("updateBill", results.billTotal)
+                socket.emit("updateUsage", results.usageTotal)
+            } else {
+                // Remove connection on authentication failure
+                socket.disconnect()
             }
-            // Feed values to client
-            console.log(`Socket ${socket.id} authenticated with ID ${data.id}. Existing bill of ${results.billTotal}`)
-            socket.emit("updateBill", results.billTotal)
-            socket.emit("updateUsage", results.usageTotal)
-        } else {
-            // Remove connection on authentication failure
-            socket.disconnect()
+            callback(authenticated)
+        } catch (error) {
+            console.error(`Authentication error: ${error}`)
         }
-        callback(authenticated, billTotal)
     })
 
     // Receive a reading from a client and log it to database
@@ -88,7 +92,7 @@ server.on("connection", (socket) => {
             console.log(`Reading from ${data.id}: ${data.usage}kWh (Reading cost £${formatPrice(data.usage * energyCost)}, Bill total £${formatPrice(connections[data.id].bill)})`)
             socket.emit("updateBill", connections[data.id].bill)
         } catch (error) {
-            console.log(error.message)
+            console.error(error.message)
         }
     })
     
@@ -241,7 +245,7 @@ gridSocket.on("connect", (socket) => {
 
 // Update locally stored energy price in accordance with power grid
 gridSocket.on("price", (data) => {
-    console.log(`Energy price updated. ${energyCost} -> ${data}`)
+    console.log(`Energy price updated. £${energyCost} -> £${data}`)
     energyCost = data
 })
 
@@ -286,3 +290,11 @@ function formatPrice(price) {
 }
 
 startProgram()
+
+function closeGridSocket() {
+    if (gridSocket) {
+        gridSocket.disconnect();
+    }
+}
+
+module.exports = { checkAuth, connections, server, closeGridSocket}

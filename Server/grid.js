@@ -30,25 +30,29 @@ const timer = ms => new Promise(res => setTimeout(res, ms))
 async function priceLoop () {
   while (true) {
     // Randomly generate either 0.01 or -0.01
-    newPrice = energyCost + ((Math.floor(Math.random() * 2) * 2) - 1)/100
-    newPrice = Math.round(newPrice * 100) / 100 // Round to 2 decimal places, stops x.xx999999999
-    if (newPrice > 0.27) { // set upper price limit to 0.27
-        console.log("Fluctiated too high, price correction")
-        newPrice = 0.26
-    }
-    if (newPrice < 0.21) { // set lower price limit to 0.21
-        console.log("Fluctuated too low, price correction")
-        newPrice = 0.22
-    }
+    try {
+      newPrice = energyCost + ((Math.floor(Math.random() * 2) * 2) - 1)/100
+      newPrice = Math.round(newPrice * 100) / 100 // Round to 2 decimal places, stops x.xx999999999
+      if (newPrice > 0.27) { // set upper price limit to 0.27
+          console.log("Fluctiated too high, price correction")
+          newPrice = 0.26
+      }
+      if (newPrice < 0.21) { // set lower price limit to 0.21
+          console.log("Fluctuated too low, price correction")
+          newPrice = 0.22
+      }
 
     // Log price changed to console
-    console.log(`Price updated from ${energyCost} to ${newPrice}`)
+      console.log(`Price updated from ${energyCost} to ${newPrice}`)
 
     // Push new energy price to clients
-    energyCost = newPrice
-    io.emit("price", energyCost)
+      energyCost = newPrice
+      io.emit("price", energyCost)
 
     // wait 1-3 minutes between price changes
+    } catch (error) {
+      console.error(`Failed to update new energy price: ${error}`);
+    }
     await timer((Math.floor(Math.random() * 120) +60) * 1000)
   }
 }
@@ -60,16 +64,20 @@ issueList = ["Substation shut down", "Heavy load on power grid", "Powerline main
 async function issueLoop () {
     while (true) {
         await timer((Math.floor(Math.random() * 180) + 60) * 1000) // wait 1-4 minutes between issues
-        chosenIssue = issueList[Math.floor(Math.random() * issueList.length)] // randomly choose an issue
+        try {
+          chosenIssue = issueList[Math.floor(Math.random() * issueList.length)] // randomly choose an issue
         // Log issue selected and push to connections
-        console.log(`Issue detected: ${chosenIssue}`)
-        console.log(`Broadcasting issue`)
-        grid_errored = true
-        io.emit(`issue`, chosenIssue)
-        await timer(Math.floor(Math.random() * 15000) + 15000) // error for 15-30 seconds
-        grid_errored = false
-        io.emit(`issue_resolved`)
-        console.log(`Issue resolved`)
+          console.log(`Issue detected: ${chosenIssue}`)
+          console.log(`Broadcasting issue`)
+          grid_errored = true
+          io.emit(`issue`, chosenIssue)
+          await timer(Math.floor(Math.random() * 15000) + 15000) // error for 15-30 seconds
+          grid_errored = false
+          io.emit(`issue_resolved`)
+          console.log(`Issue resolved`)
+        } catch (error) {
+          console.error(`A problem occured when generating a Grid error: ${error}`)
+        }       
     }
 }
 

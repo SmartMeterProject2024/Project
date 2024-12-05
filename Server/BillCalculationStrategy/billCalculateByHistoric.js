@@ -1,3 +1,4 @@
+// Strategy Pattern - Concrete
 const BillingStrategy = require('./billingStrategy.js')
 class BillByHistoricStrategy extends BillingStrategy {
   calculate(previousReadings) {
