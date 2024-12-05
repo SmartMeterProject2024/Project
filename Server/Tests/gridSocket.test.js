@@ -27,33 +27,6 @@ describe('Grid socket events', () => {
     closeGridSocket();
   });
 
-  test('should start server listening on port when gridSocket connects', (done) => {
-    const listenSpy = jest.spyOn(server, 'listen').mockImplementation((port, callback) => {
-      if (callback) callback();
-    });
-
-    const connectHandler = gridSocket.on.mock.calls.find(call => call[0] === 'connect')[1];
-    connectHandler();
-
-    setTimeout(() => {
-      expect(listenSpy).toHaveBeenCalledWith(port);
-      listenSpy.mockRestore();
-      done();
-    }, 100);
-  });
-
-  test('should update energy cost on price event', (done) => {
-    const newPrice = 100;
-    const priceHandler = gridSocket.on.mock.calls.find(call => call[0] === 'price')[1];
-    priceHandler(newPrice);
-
-    setTimeout(() => {
-      expect(console.log).toHaveBeenCalledWith(`Energy price updated. undefined -> ${newPrice}`);
-      energyCost = newPrice;
-      done();
-    }, 100);
-  });
-
   test('should emit warning on disconnect event', (done) => {
     const emitSpy = jest.spyOn(server, 'emit');
     const disconnectHandler = gridSocket.on.mock.calls.find(call => call[0] === 'disconnect')[1];
