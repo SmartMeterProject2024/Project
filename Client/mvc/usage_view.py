@@ -148,6 +148,7 @@ class UsageView:
         if self.current_usage != self.target_usage:
             self.root.after(25, self.smooth_update())  # Recursive call
 
+    # called by controller
     def update_ui(self, new_current_usage, new_total_usage, new_bill):
         self.update_gauge(new_current_usage)
         self.update_total_usage(new_total_usage)
@@ -158,17 +159,19 @@ class UsageView:
         self.target_usage = new_usage  # Set target
         self.smooth_update()  # Begin smooth transition
 
+    # updates the bill displaying currency format
     def update_bill(self, new_bill):
         self.lblBillVal.config(text=f"£{format(new_bill, '.2f')}")
 
+    # updates the total usage displaying kWh format
     def update_total_usage(self, new_total_usage):
         self.lblTotalUsageVal.config(text=f"{format(new_total_usage, '.2f')} kWh")
 
+    # updates the current time live
     def update_time(self):
         self.lblTime.config(text=datetime.now().strftime("%H:%M"))
         self.lblDate.config(text=datetime.now().strftime("%Y-%m-%d"))
         self.lblTime.after(5000, self.update_time)
-
 
     # Function to update connectivity status of server
     def update_server_connection(self, is_connected):
@@ -183,6 +186,7 @@ class UsageView:
             self.signal_icon.config(style="danger.TLabel")
             self.update_grid_connection(False)
 
+    # Function to update connectivity status of grid
     def update_grid_connection(self, is_connected, message=""):
         if is_connected:
             self.grid_status = "no_issue"
@@ -194,14 +198,17 @@ class UsageView:
             logging.error("Electricity grid issue detected")  # Log grid issue
             self.alert_icon.config(style="danger.TLabel")
 
+    # triggered when clicking connection icon
     def show_connection_status(self):
         status_message = "Connection strong" if self.connection_status == "strong" else "Connection lost"
         messagebox.showinfo("Connection Status", status_message)
 
+    # triggered when clicking grid icon
     def show_grid_status(self):
         grid_message = "Electricity grid is stable" if self.grid_status == "no_issue" else "Electricity grid issue detected"
         messagebox.showinfo("Grid Status", grid_message)
 
+    # closes client when ui is closed
     def on_closing(self):
         print("Shutdown")
         sys.exit()

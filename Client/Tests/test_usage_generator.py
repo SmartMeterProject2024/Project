@@ -8,12 +8,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from generator.usage_generator import UsageGenerator
 
 class TestGenerator(unittest.TestCase):
-
+    # Testing interval generating
     @patch('generator.usage_generator.time.sleep', return_value=None) # mock the time intervals
     @patch('builtins.print')  # mock the print function
     def test_wait_for_next_interval(self, mock_print, mock_sleep):
         usage_generator = UsageGenerator()
-        for _ in range(5):
+        for _ in range(5): # call 5 times
             usage_generator.wait_for_next_interval()
 
         # check if called 5 times
@@ -25,6 +25,7 @@ class TestGenerator(unittest.TestCase):
         for interval in intervals:
             self.assertTrue(15 <= interval <= 60, "Interval out of range")
 
+    # Testing number generation
     def test_generate_usage(self):
         usage_generator = UsageGenerator()
         for _ in range(100):

@@ -21,7 +21,7 @@ socket = socketio.Client()
 connected = False
 
 @socket.event
-def connect():
+def connect(): # Triggered on new connection with Server
     global id
     print("Connection established. (ID: " + socket.sid + ")")
     print("Attempting authentication with server...")
@@ -33,26 +33,26 @@ def connect():
 
 
 @socket.on("responseEvent")
-def authResponse(data, initial_bill, initial_total_usage):
+def authResponse(data, initial_bill, initial_total_usage): # Triggered after authentication attempt
     global connected
     if data == False: 
         print("Authentication unsuccessful")
         connected = False
-        controller.update_server_status(False)
+        controller.update_server_status(False) # update server icon in view
     else: 
         print("Authenticated")
         connected = True
         controller.update_server_status(True)
         controller.update_bill(initial_bill)
-        controller.update_total_usage(initial_total_usage)
-        socket.emit("check_grid_status", callback=receive_grid_status)
+        controller.update_total_usage(initial_total_usage) # updates initial data
+        socket.emit("check_grid_status", callback=receive_grid_status) # checks grid status
 
 @socket.on("responseEvent")
-def receive_grid_status(is_errored):
+def receive_grid_status(is_errored): # Triggered when grid status updates
     controller.update_grid_status(not is_errored)
 
 @socket.event
-def connection_error(data):
+def connection_error(data): # Triggered when connection to server errors
     global connected
     print("Failed to connect to server.")
     print(data)
@@ -60,19 +60,20 @@ def connection_error(data):
     connected = False
 
 @socket.event
-def disconnect():
+def disconnect(): # Triggered when disconnected from Server
     global connected
     print("Disconnected from client")
     controller.update_server_status(False)
     connected = False
     controller.update_grid_status(False)
 
+# called by controller when notified of a new reading
 def handle_generated_usage(interval, new_usage):
     global id, controller, connected
     try:
-        controller.update_usage_stats(interval, new_usage)
+        controller.update_usage_stats(interval, new_usage) # updates model
         reading_to_send = controller.create_reading()
-        controller.update_usage_display()
+        controller.update_usage_display() # updates view
         if connected:
             # a Python dictionary automatically converts into a JSON object
             # which is sent to the server so no need for a JSON formatter
@@ -82,7 +83,7 @@ def handle_generated_usage(interval, new_usage):
                 "usage": reading_to_send.get_usage()
             }
             print(f"Sending Reading: {reading_to_send.get_usage()} kWh")
-            socket.emit('reading', data)
+            socket.emit('reading', data) # send reading to server
     except RuntimeError as e:
         print(f"Couldn't create Reading: {e}")
     except Exception as ex:

@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from reading import Reading
 
 class TestReading(unittest.TestCase):
-
+    # Testing constructor
     def test_init(self):
         reading_A = Reading("2024-10-29T21:07:28.484042", 11.89)
         self.assertEqual(reading_A.get_time(), "2024-10-29T21:07:28.484042")

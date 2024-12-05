@@ -1,4 +1,5 @@
 class Reading:
+    # readonly functionality
     def __init__(self, time, usage):
       self.time = time
       self.usage = usage
