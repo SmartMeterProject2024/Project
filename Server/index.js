@@ -131,13 +131,15 @@ async function getReadingValues(id) {
             }).on('end', function() {
                 // Process response
                 var body = Buffer.concat(bodyChunks);
+                billTotal = 0
+                usageTotal = 0
                 // JSON to array filtered by costs
                 const costs = JSON.parse(body).map(reading => reading.cost);
                 const usages = JSON.parse(body).map(reading => reading.usage);
                 try {
                     billCalculator.setStrategy(billByHistoricStrategy)
                     billTotal = billCalculator.calculateBill(costs)
-                    usageTotal = billCalculator.calculateBill(usage) // same functionality, just adds a series of numbers
+                    usageTotal = billCalculator.calculateBill(usages) // same functionality, just adds a series of numbers
                 } catch (error) {
                     console.log(error.message)
                 } // don't amend bill if error

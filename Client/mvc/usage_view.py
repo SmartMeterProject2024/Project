@@ -228,9 +228,9 @@ class UsageView:
         print("Shutdown")
         sys.exit()
 
-# Start the program
-def run(self):
-    self.root.mainloop()
+    # Start the program
+    def run(self):
+        self.root.mainloop()
 
 
 # To run the UI
